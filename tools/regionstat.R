@@ -9,8 +9,6 @@ defaultLOLADB = "/ext/qumulo/resources/regions/LOLACore/hg38"
 option_list = list(
     make_option(c("--bedfile"), type="character", default=NULL, 
               help="bed file to process", metavar="character"),
-    make_option(c("--lolaloc"), type="character", default=defaultLOLADB,
-              help="location of LOLA Core database to process", metavar="character"),
 	make_option(c("--fileid"), type="character", default=NULL,
               help="fileID to use for output files prefix", metavar="character"),
     make_option(c("--outputfolder"), type="character", default="output",
@@ -48,20 +46,20 @@ doitall <- function(query, fileid) {
 
 	TSSdist = calcFeatureDistRefTSS(query, "hg38")
 	g = plotFeatureDist(TSSdist, featureName="TSS")
-	ggplot2::ggsave(paste0(outfolder, fileid, "_tssdist.png"), g)
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_tssdist.png"), g)
 
 	x = calcChromBinsRef(query, "hg38")
 	g = plotChromBins(x)
-	ggplot2::ggsave(paste0(outfolder, fileid, "_chrombins.png"), g)
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_chrombins.png"), g)
 
 	gcvec = calcGCContentRef(query, "hg38")
 	g = plotGCContent(gcvec)
-	ggplot2::ggsave(paste0(outfolder, fileid, "_gccontent.png"), g)
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_gccontent.png"), g)
 
 	gp = calcPartitionsRef(query, "hg38")
 	gp$Perc = gp$Freq/length(query)
 	g = plotPartitions(gp)
-	ggplot2::ggsave(paste0(outfolder, fileid, "_partitions.png"), g)
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.png"), g)
 
 	l = list()
 	bedmeta = list(id=fileid,
@@ -72,17 +70,15 @@ doitall <- function(query, fileid) {
 	l[[fileid]]=bedmeta
 	l
 
-	write(jsonlite::toJSON(l, pretty=TRUE), paste0(outfolder, fileid,".json"))
+	write(jsonlite::toJSON(l, pretty=TRUE), paste0(outfolder,"/",fileid,".json"))
 
 }
 
 # set query to bed file
-rdb = LOLA::loadRegionDB(opt$lolaloc)
 fileid = opt$fileid
 fn = opt$bedfile
-
-outfolder = opt$outputfolder  # Set to '' for cwd
+outfolder = opt$outputfolder
 
 #' query = rtracklayer::import(fn)
-query <- LOLA::readBed(fn)
+query = LOLA::readBed(fn)
 doitall(query,fileid)
