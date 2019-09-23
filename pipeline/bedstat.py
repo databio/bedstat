@@ -35,7 +35,7 @@ else:
 outfolder = os.path.abspath(os.path.join(args.outfolder, fileid))
 
 # try to create the directory and ignore failure if it already exists
-os.makedirs(outfolder, exist_ok=True)
+#os.makedirs(outfolder, exist_ok=True)
 
 pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder, args=args)
 
