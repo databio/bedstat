@@ -9,7 +9,7 @@ parser = ArgumentParser(
 parser.add_argument('--bedfile', help='full path to bed file to process')
 parser.add_argument('--outfolder', default='output', help='folder to put images and json files in')
 
-parser = pypiper.add_pypiper_args(parser, groups=["pypiper", "common", "looper"], required=['bedfile'])
+parser = pypiper.add_pypiper_args(parser, args=["genome"], groups=["pypiper", "common", "looper", "ngs"], required=['bedfile', 'genome'])
 
 args = parser.parse_args()
 
@@ -39,7 +39,7 @@ outfolder = os.path.abspath(os.path.join(args.outfolder, fileid))
 
 pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder, args=args)
 
-command = "Rscript tools/regionstat.R --bedfile=%s --fileid=%s --outputfolder=%s" % (bfile, fileid, outfolder)
+command = "Rscript tools/regionstat.R --bedfile=%s --fileid=%s --outputfolder=%s --genome=%s" % (bfile, fileid, outfolder, args.genome_assembly)
 
 target = os.path.abspath(os.path.join(outfolder, bedfile_portion))
 
