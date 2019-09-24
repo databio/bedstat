@@ -1,0 +1,4 @@
+metadata:
+    sample_annotation: lolacore.csv
+    output_dir: "$HOME/bedstat_output"
+    pipeline_interfaces: "$CODEBASE/pipeline/pipeline_interface.yaml"
