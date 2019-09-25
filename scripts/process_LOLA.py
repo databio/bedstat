@@ -19,7 +19,7 @@ class LOLAIndexFileError(Exception):
 # the index file is expected to be in tsv format
 # however, the header structure is not fixed
 # if the file happens to be in csv format, we try to make it right
-def process_index_file(base_dir, idx_file):
+def process_index_file(base_dir, idx_file, genome):
     #print("%s" % idx_file)
     bed_path_base = os.path.abspath(os.path.join(base_dir, "regions"))
     with open(idx_file) as tsvfile:
@@ -35,18 +35,28 @@ def process_index_file(base_dir, idx_file):
                     reader = csv.DictReader(tsvfile)
                     n = reader.__next__()
                 else:
-                    raise LOLAIndexFileError
+                    raise Exception("Not tsv and not csv format for %s. Aborting." % idx_file)
             for row in reader:
                 s = ''
                 if 'filename' in row:
+                    # see if the file name makes sense - sometimes some filenames have , or . in them
+                    # and are split inappropriately
                     s = os.path.abspath(os.path.join(bed_path_base, row['filename']))
+                    f = Path(s)
+                    if not (f.exists() and f.is_file()):
+                        # skip file
+                        raise LOLAIndexFileError
                 else:
                     raise LOLAIndexFileError
                 if 'cellType' in row:
                     s = s + "," + row['cellType']
                 else:
                     s = s + ',' + "unknown"
+                s = s + ',bedstat' + ',' + genome
                 print(s)
+        except LOLAIndexFileError as l:
+            sys.stderr.write("Skipping line %s in index file %s\n" % (row, idx_file))
+            pass
         except Exception as e:
             print("Exception reading %s file" % idx_file)
             raise
@@ -77,7 +87,7 @@ if __name__ == '__main__':
     full_path = os.path.abspath(os.path.join(lola_base, genome))
 
     # what we are interested in for now from index.txt files
-    print("input,celltype")
+    print("sample_name,celltype,protocol,genome")
     # search for subfolders and index.txt
     for filename in Path(full_path).glob('**/index.txt'):
         # break down the path from each index.txt file
@@ -87,7 +97,7 @@ if __name__ == '__main__':
             path_parts = os.path.split(filename)
             if (len(path_parts) != 2): break
             # process index file
-            process_index_file(path_parts[0], filename)
+            process_index_file(path_parts[0], filename, genome)
             
             # process collections file
             #collection_file = os.path.abspath(os.path.join(path_parts[0], 'collection.txt'))

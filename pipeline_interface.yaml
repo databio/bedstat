@@ -1,0 +1,23 @@
+protocol_mapping:
+    bedstat: bedstat
+
+pipelines:
+  bedstat:
+    name: BEDSTAT
+    path: pipeline/bedstat.py
+    looper_args: True
+    #required_input_files: [read1]
+    #all_input_files: [read1, read2]
+    #ngs_input_files: [read1, read2]
+    arguments:
+      "--bedfile": sample_name
+      "--genome": genome
+    #compute:
+    #  singularity_image: ${SIMAGES}pepatac
+    #  docker_image: databio/pepatac
+    #summarizers:
+    #  - tools/regionstat.R
+    #resources:
+    #  default:
+    #    cores: "2"
+    #    mem: "16000"
