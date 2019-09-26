@@ -1,7 +1,7 @@
 # bedstat
 EPISB pipeline for obtaining statistics about bed files
 
-## HOW TO USE
+## How to use
 
 Run "scripts/process_LOLA.py" and feed it the location of your LOLA database copy. E.g.:
 
