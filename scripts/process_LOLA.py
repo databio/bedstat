@@ -6,6 +6,7 @@
 from argparse import ArgumentParser
 import os, sys
 from pathlib import Path
+from copy import deepcopy
 
 # for reading TSV files
 import csv
@@ -22,20 +23,21 @@ class LOLAIndexFileError(Exception):
 def process_index_file(base_dir, idx_file, genome):
     #print("%s" % idx_file)
     bed_path_base = os.path.abspath(os.path.join(base_dir, "regions"))
-    with open(idx_file) as tsvfile:
+    with open(idx_file) as tsvfile, open(idx_file) as test:
         try:
-            reader = csv.DictReader(tsvfile, dialect='excel-tab')
+            reader = csv.DictReader(test, dialect='excel-tab')
             n = reader.__next__()
-            # handle the case where index.txt is csv, not tsv
             l = list(n)
             if len(n) == 1:
                 # csv case
                 if (l[0].find(',') != -1):
-                    tsvfile.seek(0)
-                    reader = csv.DictReader(tsvfile)
-                    n = reader.__next__()
+                    test.seek(0)
+                    reader = csv.DictReader(test)
                 else:
                     raise Exception("Not tsv and not csv format for %s. Aborting." % idx_file)
+            else:
+                # tsv case
+                reader = csv.DictReader(tsvfile, dialect='excel-tab')
             for row in reader:
                 s = ''
                 if 'filename' in row:
