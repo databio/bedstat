@@ -6,7 +6,6 @@
 from argparse import ArgumentParser
 import os, sys
 from pathlib import Path
-from copy import deepcopy
 
 # for reading TSV files
 import csv
