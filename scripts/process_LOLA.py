@@ -19,10 +19,10 @@ class LOLAIndexFileError(Exception):
 # the index file is expected to be in tsv format
 # however, the header structure is not fixed
 # if the file happens to be in csv format, we try to make it right
-def process_index_file(base_dir, idx_file, genome):
-    #print("%s" % idx_file)
+def process_index_file(base_dir, genome):
     bed_path_base = os.path.abspath(os.path.join(base_dir, "regions"))
-    with open(idx_file) as tsvfile, open(idx_file) as test:
+    idx_file = os.path.join(base_dir, "index.txt")
+    with open(idx_file, "r") as tsvfile, open(idx_file, "r") as test:
         try:
             reader = csv.DictReader(test, dialect='excel-tab')
             n = reader.__next__()
@@ -98,7 +98,7 @@ if __name__ == '__main__':
             path_parts = os.path.split(filename)
             if (len(path_parts) != 2): break
             # process index file
-            process_index_file(path_parts[0], filename, genome)
+            process_index_file(path_parts[0], genome)
             
             # process collections file
             #collection_file = os.path.abspath(os.path.join(path_parts[0], 'collection.txt'))
