@@ -7,7 +7,7 @@ parser = ArgumentParser(
     description="A pipeline to read a file in BED format and produce metadata in JSON format.")
 
 parser.add_argument('--bedfile', help='full path to bed file to process')
-parser.add_argument('--outfolder', default='output', help='folder to put images and json files in')
+#parser.add_argument('--outfolder', default=output_dir, help='folder to put images and json files in')
 
 parser = pypiper.add_pypiper_args(parser, args=["genome"], groups=["pypiper", "common", "looper", "ngs"], required=['bedfile', 'genome'])
 
@@ -17,6 +17,8 @@ args = parser.parse_args()
 if (args.bedfile is None):
     parser.print_help()
     sys.exit()
+
+outfolder = args.output_parent
 
 # get the --bedfile argument for the R script
 bfile = args.bedfile
@@ -32,7 +34,7 @@ else:
     fileid = bedfile_portion[0:dot_separator_idx]
 
 # get the output folder argument for the R script
-outfolder = os.path.abspath(os.path.join(args.outfolder, fileid))
+outfolder = os.path.abspath(os.path.join(outfolder, fileid))
 
 # try to create the directory and ignore failure if it already exists
 #os.makedirs(outfolder, exist_ok=True)
