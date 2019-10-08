@@ -1,7 +1,10 @@
 #!/usr/bin/env python
-
 from argparse import ArgumentParser
 import pypiper, os, sys
+from elasticsearch import Elasticsearch
+from elasticsearch import helpers
+from elasticsearch.serializer import JSONSerializer
+import json
 
 parser = ArgumentParser(
     description="A pipeline to read a file in BED format and produce metadata in JSON format.")
@@ -46,5 +49,20 @@ command = "Rscript tools/regionstat.R --bedfile=%s --fileid=%s --outputfolder=%s
 target = os.path.abspath(os.path.join(outfolder, bedfile_portion))
 
 pm.run(command, target)
+
+# now get the resulting json file and load it into elasticsearch
+# it the file exists, of course
+if bedfile_portion.find('.') != -1:
+    # open connection to elastic
+    try:
+        es = Elasticsearch([{'host': 'localhost'}])
+
+        json_file = bedfile_portion.split('.')[0] + ".json"
+        json_file_path = os.path.abspath(os.path.join(outfolder, json_file))
+        with open(json_file_path, 'r', encoding='utf-8') as f:
+            data=json.loads(f.read())
+        es.index(index="bedstat_bedfiles", doc_type='doc', body=data)
+    except Exception as e:
+        print(e)
 
 pm.stop_pipeline()
