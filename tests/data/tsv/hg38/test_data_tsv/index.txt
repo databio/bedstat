@@ -1,0 +1,4 @@
+filename	cellType	treatment  	description
+a.bed	a	None	first  cell line
+b.bed	b	None	second  cell line
+c.bed	c	EWS-FLI1	test
