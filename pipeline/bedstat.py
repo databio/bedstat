@@ -9,17 +9,13 @@ import json
 parser = ArgumentParser(
     description="A pipeline to read a file in BED format and produce metadata in JSON format.")
 
-parser.add_argument('--bedfile', help='full path to bed file to process')
-#parser.add_argument('--outfolder', default=output_dir, help='folder to put images and json files in')
+parser.add_argument('--bedfile', help='full path to bed file to process', required=True)
+# parser.add_argument('--outfolder', default=output_dir, help='folder to put images and json files in')
 
-parser = pypiper.add_pypiper_args(parser, args=["genome"], groups=["pypiper", "common", "looper", "ngs"], required=['bedfile', 'genome'])
+parser = pypiper.add_pypiper_args(parser, args=["genome"], groups=["pypiper", "common", "looper", "ngs"],
+                                  required=['bedfile', 'genome'])
 
 args = parser.parse_args()
-
-# get all the arguments and prepare to call R script
-if (args.bedfile is None):
-    parser.print_help()
-    sys.exit()
 
 outfolder = args.output_parent
 
@@ -30,21 +26,19 @@ bfile = args.bedfile
 split_path = os.path.split(bfile)
 
 bedfile_portion = split_path[1]
-dot_separator_idx = bedfile_portion.find('.')
-if (dot_separator_idx < 0):
-    fileid = bedfile_portion
-else:
-    fileid = bedfile_portion[0:dot_separator_idx]
+
+fileid = os.path.splitext(bedfile_portion)[0]
 
 # get the output folder argument for the R script
 outfolder = os.path.abspath(os.path.join(outfolder, fileid))
 
 # try to create the directory and ignore failure if it already exists
-#os.makedirs(outfolder, exist_ok=True)
+# os.makedirs(outfolder, exist_ok=True)
 
 pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder, args=args)
 
-command = "Rscript tools/regionstat.R --bedfile=%s --fileid=%s --outputfolder=%s --genome=%s" % (bfile, fileid, outfolder, args.genome_assembly)
+command = "Rscript tools/regionstat.R --bedfile=%s --fileid=%s --outputfolder=%s --genome=%s" \
+          % (bfile, fileid, outfolder, args.genome_assembly)
 
 target = os.path.abspath(os.path.join(outfolder, bedfile_portion))
 
@@ -52,15 +46,15 @@ pm.run(command, target)
 
 # now get the resulting json file and load it into elasticsearch
 # it the file exists, of course
-if bedfile_portion.find('.') != -1:
+if os.path.splitext(bedfile_portion)[1] != '':
     # open connection to elastic
     try:
         es = Elasticsearch([{'host': 'localhost'}])
 
-        json_file = bedfile_portion.split('.')[0] + ".json"
+        json_file = os.path.splitext(bedfile_portion)[1] + ".json"
         json_file_path = os.path.abspath(os.path.join(outfolder, json_file))
         with open(json_file_path, 'r', encoding='utf-8') as f:
-            data=json.loads(f.read())
+            data = json.loads(f.read())
         es.index(index="bedstat_bedfiles", doc_type='doc', body=data)
     except Exception as e:
         print(e)
