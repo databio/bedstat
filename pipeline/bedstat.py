@@ -51,7 +51,7 @@ if os.path.splitext(bedfile_portion)[1] != '':
     try:
         es = Elasticsearch([{'host': 'localhost'}])
 
-        json_file = os.path.splitext(bedfile_portion)[1] + ".json"
+        json_file = os.path.splitext(bedfile_portion)[0] + ".json"
         json_file_path = os.path.abspath(os.path.join(outfolder, json_file))
         with open(json_file_path, 'r', encoding='utf-8') as f:
             data = json.loads(f.read())
