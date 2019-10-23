@@ -2,3 +2,4 @@ output
 bedstat_output
 lolacore.csv
 pipeline/__pycache__/
+*/#*
