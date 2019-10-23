@@ -63,16 +63,16 @@ doitall <- function(query, fileid, genome) {
 	g = plotPartitions(gp)
 	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.png"), g)
 
-	l = list()
+	##l = list()
 	bedmeta = list(id=fileid,
 		gc_content=mean(gcvec),
 		num_regions=length(query),
 		mean_abs_tss_dist=mean(abs(TSSdist), na.rm=TRUE),
 		genomic_partitions=gp)
-	l[[fileid]]=bedmeta
-	l
+	##l[[fileid]]=bedmeta
+	##l
 
-	write(jsonlite::toJSON(l, pretty=TRUE), paste0(outfolder,"/",fileid,".json"))
+	write(jsonlite::toJSON(bedmeta, pretty=TRUE), paste0(outfolder,"/",fileid,".json"))
 
 }
 

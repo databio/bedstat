@@ -10,6 +10,7 @@ parser = ArgumentParser(
     description="A pipeline to read a file in BED format and produce metadata in JSON format.")
 
 parser.add_argument('--bedfile', help='full path to bed file to process', required=True)
+parser.add_argument('--nodbcommit', help='do not try to commit json outout to back end database', action='store_true')
 # parser.add_argument('--outfolder', default=output_dir, help='folder to put images and json files in')
 
 parser = pypiper.add_pypiper_args(parser, args=["genome"], groups=["pypiper", "common", "looper", "ngs"],
@@ -46,7 +47,7 @@ pm.run(command, target)
 
 # now get the resulting json file and load it into elasticsearch
 # it the file exists, of course
-if os.path.splitext(bedfile_portion)[1] != '':
+if not args.nodbcommit and os.path.splitext(bedfile_portion)[1] != '':
     # open connection to elastic
     try:
         es = Elasticsearch([{'host': 'localhost'}])
