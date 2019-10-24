@@ -53,7 +53,7 @@ docker ps | grep elasticsearch
 
 Run Kibana to link to that container:
 ```
-docker --link <ID OF ELASTIC CONTAINER HERE>:elasticsearch -p 5601:5601  docker.elastic.co/kibana/kibana:6.5.4
+docker run --link <ID OF ELASTIC CONTAINER HERE>:elasticsearch -p 5601:5601  docker.elastic.co/kibana/kibana:6.5.4
 ```
 
 Point your local web browser to http://localhost:5601
