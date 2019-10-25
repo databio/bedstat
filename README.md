@@ -69,3 +69,10 @@ Following R packages are necessary to run the code that processes BED files:
 * GenomicDistributions (via devtools::install_github("databio/GenomicDistributions")
 * BSgenome (via BiocManager::install)
 * LOLA (via BiocManager::install)
+
+### Python dependencies ###
+
+Following Python packages are necessary to run the bedstat pipeline:
+
+* pypiper (via pip install piper)
+* looper (via pip install loopercli)
