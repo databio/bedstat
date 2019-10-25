@@ -57,3 +57,15 @@ docker run --link <ID OF ELASTIC CONTAINER HERE>:elasticsearch -p 5601:5601  doc
 ```
 
 Point your local web browser to http://localhost:5601
+
+### R Dependencies ###
+
+Following R packages are necessary to run the code that processes BED files:
+
+* BiocManager
+* optparse
+* devtools
+* GenomicRanges (via BiocManager::install)
+* GenomicDistributions (via devtools::install_github("databio/GenomicDistributions")
+* BSgenome (via BiocManager::install)
+* LOLA (via BiocManager::install)
