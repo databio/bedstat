@@ -11,7 +11,10 @@ parser = ArgumentParser(
 
 parser.add_argument('--bedfile', help='full path to bed file to process', required=True)
 parser.add_argument('--nodbcommit', help='do not try to commit json outout to back end database', action='store_true')
-parser.add_argument('--dbhost', help='use database host address/name to connect to', required='--nodbcommit' not in sys.argv)
+parser.add_argument('--dbhost', 
+                    help='use database host address/name to connect to', 
+                    required='--nodbcommit' not in sys.argv, 
+                    default='localhost')
 # parser.add_argument('--outfolder', default=output_dir, help='folder to put images and json files in')
 
 parser = pypiper.add_pypiper_args(parser, args=["genome"], groups=["pypiper", "common", "looper", "ngs"],
