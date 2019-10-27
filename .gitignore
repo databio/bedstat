@@ -1,5 +1,6 @@
 output
 bedstat_output
 lolacore.csv
-pipeline/__pycache__/
+__pycache__
+*/__pycache__
 */#*

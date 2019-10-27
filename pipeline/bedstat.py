@@ -49,6 +49,11 @@ target = os.path.abspath(os.path.join(outfolder, bedfile_portion))
 
 pm.run(command, target)
 
+# commit the original bed file PATH (!) into a separate file to be used by the REST API
+# this is necessary to be able to serve the raw bed file via the REST server
+with open(os.path.abspath(os.path.join(outfolder, fileid + ".path")), 'w') as f:
+    f.write(bfile)
+
 # now get the resulting json file and load it into elasticsearch
 # it the file exists, of course
 if not args.nodbcommit and os.path.splitext(bedfile_portion)[1] != '':
