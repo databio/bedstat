@@ -21,10 +21,16 @@ The above command will build the csv file looper needs to run the pipeline on al
 docker volume create es-data
 ```
 
+**Note**: python elasticsearch-dsl module used to connect to elasticsearch MUST match the version of elasticsearch server running in Docker or locally. The requirements.txt file that comes with this code base is set up to fulfill this requirement. It can be installed via:
+
+```
+pip install -r requirements.txt --user
+```
+
 ### 3. Run the docker container for elasticsearch
 
 ```
-docker run -p 9200:9200 -p 9300:9300 -v es-data:/usr/share/elasticsearch/data elasticsearch:6.5.4
+docker run -p 9200:9200 -p 9300:9300 -v es-data:/usr/share/elasticsearch/data -e "xpack.ml.enabled=false" -e "discovery.type=single-node" elasticsearch:7.4.1
 ```
 
 ### 4. Run the bedstat pipeline on the PEP
@@ -76,3 +82,6 @@ Following Python packages are necessary to run the bedstat pipeline:
 
 * pypiper (via pip install piper)
 * looper (via pip install loopercli)
+* elasticsearch-dsl
+
+

@@ -65,7 +65,7 @@ if not args.nodbcommit and os.path.splitext(bedfile_portion)[1] != '':
         json_file_path = os.path.abspath(os.path.join(outfolder, json_file))
         with open(json_file_path, 'r', encoding='utf-8') as f:
             data = json.loads(f.read())
-        es.index(index="bedstat_bedfiles", doc_type='doc', body=data)
+        es.index(index="bedstat_bedfiles", body=data)
     except Exception as e:
         raise e
 
