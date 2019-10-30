@@ -30,7 +30,13 @@ pip install -r requirements.txt --user
 ### 3. Run the docker container for elasticsearch
 
 ```
-docker run -p 9200:9200 -p 9300:9300 -v es-data:/usr/share/elasticsearch/data -e "xpack.ml.enabled=false" -e "discovery.type=single-node" elasticsearch:7.4.1
+docker run -p 9200:9200 -p 9300:9300 -v es-data:/usr/share/elasticsearch/data -e "xpack.ml.enabled=false" \
+  -e "discovery.type=single-node" elasticsearch:7.4.1
+```
+
+```
+docker run -p 9200:9200 -p 9300:9300 -v /ext/qumulo/database/elastic:/usr/share/elasticsearch/data \
+  -e "xpack.ml.enabled=false" -e "discovery.type=single-node" elasticsearch:7.4.1
 ```
 
 ### 4. Run the bedstat pipeline on the PEP
