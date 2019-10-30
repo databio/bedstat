@@ -1,5 +1,6 @@
 library(GenomicDistributions)
 library(optparse)
+library(tools)
 
 ## we need to parameterize LOLACore location
 ## and file name for bed file
@@ -44,8 +45,12 @@ if (is.null(opt$fileid)) {
 ##fileid <- "E125-DNase.macs2"
 ##fn <- "/home/maketo/dev/sheffield/ext/qumulo/LOLAweb/databases/LOLACore/hg38/cistrome_cistrome/regions/Human_HepG2-liver-cells_FoxA2_No-treatment_Wadelius.bed"
 
-doitall <- function(query, fileid, genome) {
+doitall <- function(query, fname, fileid, genome) {
 
+    ## calculate md5 sum of bedfile
+    md5s <- as.vector(md5sum(fname))
+
+    ## continue on with calculations
 	TSSdist = calcFeatureDistRefTSS(query, genome)
 	g = plotFeatureDist(TSSdist, featureName="TSS")
 	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_tssdist.png"), g)
@@ -68,7 +73,9 @@ doitall <- function(query, fileid, genome) {
 		gc_content=mean(gcvec),
 		num_regions=length(query),
 		mean_abs_tss_dist=mean(abs(TSSdist), na.rm=TRUE),
-		genomic_partitions=gp)
+		genomic_partitions=gp,
+        path_to_bed_file=fn,
+        md5sum=md5s)
 	##l[[fileid]]=bedmeta
 	##l
 
@@ -84,4 +91,4 @@ genome = opt$genome
 
 #' query = rtracklayer::import(fn)
 query = LOLA::readBed(fn)
-doitall(query,fileid,genome)
+doitall(query,fn,fileid,genome)
