@@ -47,6 +47,12 @@ command = "Rscript tools/regionstat.R --bedfile=%s --fileid=%s --outputfolder=%s
 
 target = os.path.abspath(os.path.join(outfolder, bedfile_portion))
 
+# create a symlink to original bedfile
+try:
+    os.symlink(bfile, os.path.abspath(os.path.join(outfolder, "raw_bedfile")))
+except Exception as e:
+    raise e
+
 pm.run(command, target)
 
 # now get the resulting json file and load it into elasticsearch
