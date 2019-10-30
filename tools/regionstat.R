@@ -74,7 +74,6 @@ doitall <- function(query, fname, fileid, genome) {
 		num_regions=length(query),
 		mean_abs_tss_dist=mean(abs(TSSdist), na.rm=TRUE),
 		genomic_partitions=gp,
-        path_to_bed_file=fn,
         md5sum=md5s)
 	##l[[fileid]]=bedmeta
 	##l
