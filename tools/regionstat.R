@@ -53,21 +53,29 @@ doitall <- function(query, fname, fileid, genome) {
     ## continue on with calculations
 	TSSdist = calcFeatureDistRefTSS(query, genome)
 	g = plotFeatureDist(TSSdist, featureName="TSS")
-	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_tssdist.png"), g)
-
+    # different width/heights for presenting on screen in HTML and for PDFs
+    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_tssdist.png"), g, device="png", width=12, height=12, units="cm")
+    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_tssdist.pdf"), g, device="pdf", width=15, height=15, units="cm")
+    
 	x = calcChromBinsRef(query, genome)
 	g = plotChromBins(x)
-	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_chrombins.png"), g)
-
+    # different width/heights for presenting on screen in HTML and for PDFs    
+    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_chrombins.png"), g, device="png", width=12, height=12, units="cm")
+    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_chrombins.pdf"), g, device="pdf", width=15, height=15, units="cm")
+    
 	gcvec = calcGCContentRef(query, genome)
 	g = plotGCContent(gcvec)
-	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_gccontent.png"), g)
-
+    # different width/heights for presenting on screen in HTML and for PDFs
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_gccontent.png"), g, device="png", width=12, height=12, units="cm")
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_gccontent.pdf"), g, device="pdf", width=15, height=15, units="cm")
+    
 	gp = calcPartitionsRef(query, genome)
 	gp$Perc = gp$Freq/length(query)
 	g = plotPartitions(gp)
-	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.png"), g)
-
+    # different width/heights for presenting on screen in HTML and for PDFs    
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.png"), g, device="png", width=12, height=12, units="cm")
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.pdf"), g, device="pdf", width=15, height=15, units="cm")
+    
 	##l = list()
 	bedmeta = list(id=fileid,
 		gc_content=mean(gcvec),

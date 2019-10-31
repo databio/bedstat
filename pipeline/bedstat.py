@@ -49,7 +49,9 @@ target = os.path.abspath(os.path.join(outfolder, bedfile_portion))
 
 # create a symlink to original bedfile
 try:
-    os.symlink(bfile, os.path.abspath(os.path.join(outfolder, "raw_bedfile")))
+    symlink_name = os.path.abspath(os.path.join(outfolder, "raw_bedfile"))
+    if not os.path.islink(symlink_name):
+        os.symlink(bfile, symlink_name)
 except Exception as e:
     raise e
 
