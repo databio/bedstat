@@ -4,7 +4,7 @@ import pypiper, os, sys
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
 from elasticsearch.serializer import JSONSerializer
-import json
+import json, gzip, shutil, yaml
 
 parser = ArgumentParser(
     description="A pipeline to read a file in BED format and produce metadata in JSON format.")
@@ -15,7 +15,11 @@ parser.add_argument('--dbhost',
                     help='use database host address/name to connect to', 
                     required='--nodbcommit' not in sys.argv, 
                     default='localhost')
-# parser.add_argument('--outfolder', default=output_dir, help='folder to put images and json files in')
+# parser argument for yaml - to pass on more sample metadata into the database
+parser.add_argument("-y", "--sample-yaml",
+                    dest="sample_config",
+                    help="Yaml config file with sample attributes.",
+                    type=str)
 
 parser = pypiper.add_pypiper_args(parser, args=["genome"], groups=["pypiper", "common", "looper", "ngs"],
                                   required=['bedfile', 'genome'])
@@ -37,8 +41,8 @@ fileid = os.path.splitext(bedfile_portion)[0]
 # get the output folder argument for the R script
 outfolder = os.path.abspath(os.path.join(outfolder, fileid))
 
-# try to create the directory and ignore failure if it already exists
-# os.makedirs(outfolder, exist_ok=True)
+# get the sample line from the yaml config file
+y = yaml.load(open(args.sample_config, "r"))
 
 pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder, args=args)
 
@@ -47,11 +51,12 @@ command = "Rscript tools/regionstat.R --bedfile=%s --fileid=%s --outputfolder=%s
 
 target = os.path.abspath(os.path.join(outfolder, bedfile_portion))
 
-# create a symlink to original bedfile
+# gzip the original bed file and keep it with the pipeline results
 try:
-    symlink_name = os.path.abspath(os.path.join(outfolder, "raw_bedfile"))
-    if not os.path.islink(symlink_name):
-        os.symlink(bfile, symlink_name)
+    dst_path = os.path.abspath(os.path.join(outfolder, bedfile_portion))
+    with open(bfile, 'rb') as f_in:
+        with gzip.open(dst_path + '.gz', 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
 except Exception as e:
     raise e
 
@@ -68,6 +73,9 @@ if not args.nodbcommit and os.path.splitext(bedfile_portion)[1] != '':
         json_file_path = os.path.abspath(os.path.join(outfolder, json_file))
         with open(json_file_path, 'r', encoding='utf-8') as f:
             data = json.loads(f.read())
+            for key in ['cellType', 'cellTypeSubtype', 'antibody', 'mappingGenome', 'description', 'tissue', 'species']:
+                data[key] = y[key]
+            # enrich the data from R with the data from the sample line itself
         es.index(index="bedstat_bedfiles", body=data)
     except Exception as e:
         raise e

@@ -12,6 +12,7 @@ pipelines:
     arguments:
       "--bedfile": sample_name
       "--genome": genome
+      "--sample-yaml": yaml_file
     #compute:
     #  singularity_image: ${SIMAGES}pepatac
     #  docker_image: databio/pepatac

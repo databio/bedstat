@@ -13,6 +13,20 @@ import csv
 class LOLAIndexFileError(Exception):
     pass
 
+class LOLAIndexColumnError(Exception):
+    pass
+
+global idx_file_keywords
+
+idx_file_keywords = ['filename',
+                     'cellType',
+                     'cellTypeSubtype',
+                     'antibody',
+                     'mappingGenome',
+                     'description',
+                     'tissue',
+                     'species']
+
 # process index file from LOLA core DB
 # expects a base directory for the collection
 # and base_dir/regions to contain the bed files
@@ -38,26 +52,38 @@ def process_index_file(base_dir, genome):
                 # tsv case
                 reader = csv.DictReader(tsvfile, dialect='excel-tab')
             for row in reader:
-                s = ''
-                if 'filename' in row:
-                    # see if the file name makes sense - sometimes some filenames have , or . in them
-                    # and are split inappropriately
-                    s = os.path.abspath(os.path.join(bed_path_base, row['filename']))
-                    f = Path(s)
-                    if not (f.exists() and f.is_file()):
-                        # skip file
-                        raise LOLAIndexFileError
-                else:
-                    raise LOLAIndexFileError
-                if 'cellType' in row:
-                    s = s + "," + row['cellType']
-                else:
-                    s = s + ',' + "unknown"
+                try:
+                    s = ''
+                    for kw in idx_file_keywords:
+                        if kw not in row:
+                            if kw == 'filename':
+                                raise LOLAIndexColumnError
+                            s = s + ',unspecified'
+                        else:
+                            if kw == 'filename':
+                                # see if the file name makes sense - sometimes some filenames have , or . in them
+                                # and are split inappropriately
+                                s = os.path.abspath(os.path.join(bed_path_base, row['filename']))
+                                f = Path(s)
+                                if not (f.exists() and f.is_file()):
+                                    # skip file
+                                    raise LOLAIndexFileError
+                            else:
+                                if row[kw] == '':
+                                    t = 'unspecified'
+                                else:
+                                    t = row[kw]
+                                s = s + ',' + t
+                except LOLAIndexFileError as lie:
+                    fn_err = os.path.abspath(os.path.join(bed_path_base, row['filename']))
+                    msg = "Skipping line #{} in index file {}, file {} not found.\n".format(reader.line_num, idx_file, fn_err)
+                    sys.stderr.write(msg)
+                except LOLAIndexColumnError as lce:
+                    msg = "Skipping line {} in index file {}, no filename column.\n".format(row, idx_file)
+                    sys.stderr.write(msg)
+                # add the protocol and genome at the end of each row
                 s = s + ',bedstat' + ',' + genome
                 print(s)
-        except LOLAIndexFileError as l:
-            sys.stderr.write("Skipping line %s in index file %s\n" % (row, idx_file))
-            pass
         except Exception as e:
             print("Exception reading %s file" % idx_file)
             raise
@@ -88,7 +114,8 @@ if __name__ == '__main__':
     full_path = os.path.abspath(os.path.join(lola_base, genome))
 
     # what we are interested in for now from index.txt files
-    print("sample_name,celltype,protocol,genome")
+    header = 'sample_name,' + ','.join(idx_file_keywords[1:]) + ',protocol,genome'
+    print(header)
     # search for subfolders and index.txt
     for filename in Path(full_path).glob('**/index.txt'):
         # break down the path from each index.txt file
