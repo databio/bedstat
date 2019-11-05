@@ -57,6 +57,9 @@ try:
     with open(bfile, 'rb') as f_in:
         with gzip.open(dst_path + '.gz', 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out)
+    # create a symlink to make the .gz easier to find
+    if not os.path.exists("raw_bedfile"):
+        os.symlink(bedfile_portion + ".gz", os.path.abspath(os.path.join(outfolder, "raw_bedfile")))
 except Exception as e:
     raise e
 
