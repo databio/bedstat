@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 from argparse import ArgumentParser
 import pypiper, os, sys
 from elasticsearch import Elasticsearch
@@ -42,7 +43,7 @@ fileid = os.path.splitext(bedfile_portion)[0]
 outfolder = os.path.abspath(os.path.join(outfolder, fileid))
 
 # get the sample line from the yaml config file
-y = yaml.load(open(args.sample_config, "r"))
+y = yaml.safe_load(open(args.sample_config, "r"))
 
 pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder, args=args)
 
@@ -58,8 +59,9 @@ try:
         with gzip.open(dst_path + '.gz', 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out)
     # create a symlink to make the .gz easier to find
-    if not os.path.exists("raw_bedfile"):
-        os.symlink(bedfile_portion + ".gz", os.path.abspath(os.path.join(outfolder, "raw_bedfile")))
+    link_dest = os.path.abspath(os.path.join(outfolder, "raw_bedfile"))
+    if not os.path.exists(link_dest):
+        os.symlink(bedfile_portion + ".gz", link_dest)
 except Exception as e:
     raise e
 
@@ -77,8 +79,13 @@ if not args.nodbcommit and os.path.splitext(bedfile_portion)[1] != '':
         with open(json_file_path, 'r', encoding='utf-8') as f:
             data = json.loads(f.read())
             for key in ['cellType', 'cellTypeSubtype', 'antibody', 'mappingGenome', 'description', 'tissue', 'species']:
-                data[key] = y[key]
+                try:
+                    data[key] = y[key]
+                except KeyError:
+                    pm.warning("Can't find key: {}".format(key))
+                    pm.warning(y)
             # enrich the data from R with the data from the sample line itself
+        pm.info("Inserting into database...")
         es.index(index="bedstat_bedfiles", body=data)
     except Exception as e:
         raise e
