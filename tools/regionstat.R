@@ -54,27 +54,27 @@ doitall <- function(query, fname, fileid, genome) {
 	TSSdist = calcFeatureDistRefTSS(query, genome)
 	g = plotFeatureDist(TSSdist, featureName="TSS")
     # different width/heights for presenting on screen in HTML and for PDFs
-    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_tssdist.png"), g, device="png", width=12, height=12, units="cm")
-    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_tssdist.pdf"), g, device="pdf", width=15, height=15, units="cm")
+    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_tssdist.png"), g, device="png", width=8, height=8, units="cm")
+    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_tssdist.pdf"), g, device="pdf", width=8, height=8, units="cm")
     
 	x = calcChromBinsRef(query, genome)
 	g = plotChromBins(x)
     # different width/heights for presenting on screen in HTML and for PDFs    
-    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_chrombins.png"), g, device="png", width=12, height=12, units="cm")
-    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_chrombins.pdf"), g, device="pdf", width=15, height=15, units="cm")
+    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_chrombins.png"), g, device="png", width=18, height=12, units="cm")
+    ggplot2::ggsave(paste0(outfolder, "/", fileid, "_chrombins.pdf"), g, device="pdf", width=18, height=12, units="cm")
     
 	gcvec = calcGCContentRef(query, genome)
 	g = plotGCContent(gcvec)
     # different width/heights for presenting on screen in HTML and for PDFs
-	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_gccontent.png"), g, device="png", width=12, height=12, units="cm")
-	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_gccontent.pdf"), g, device="pdf", width=15, height=15, units="cm")
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_gccontent.png"), g, device="png", width=6, height=6, units="cm")
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_gccontent.pdf"), g, device="pdf", width=6, height=6, units="cm")
     
 	gp = calcPartitionsRef(query, genome)
 	gp$Perc = gp$Freq/length(query)
 	g = plotPartitions(gp)
     # different width/heights for presenting on screen in HTML and for PDFs    
-	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.png"), g, device="png", width=12, height=12, units="cm")
-	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.pdf"), g, device="pdf", width=15, height=15, units="cm")
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.png"), g, device="png", width=9, height=9, units="cm")
+	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.pdf"), g, device="pdf", width=9, height=9, units="cm")
     
 	##l = list()
 	bedmeta = list(id=fileid,
