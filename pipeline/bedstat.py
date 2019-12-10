@@ -78,7 +78,7 @@ if not args.nodbcommit and os.path.splitext(bedfile_portion)[1] != '':
         json_file_path = os.path.abspath(os.path.join(outfolder, json_file))
         with open(json_file_path, 'r', encoding='utf-8') as f:
             data = json.loads(f.read())
-            for key in ['cellType', 'cellTypeSubtype', 'antibody', 'mappingGenome', 'description', 'tissue', 'species']:
+            for key in ['cellType', 'cellTypeSubtype', 'antibody', 'mappingGenome', 'description', 'tissue', 'species', 'protocol', 'genome']:
                 try:
                     data[key] = y[key]
                 except KeyError:
