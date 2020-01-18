@@ -10,9 +10,8 @@ pipelines:
     #all_input_files: [read1, read2]
     #ngs_input_files: [read1, read2]
     arguments:
-      "--bedfile": sample_name
+      "--bedfile": output_file_path
       "--genome": genome
-      "--sample-yaml": yaml_file
     #compute:
     #  singularity_image: ${SIMAGES}pepatac
     #  docker_image: databio/pepatac
