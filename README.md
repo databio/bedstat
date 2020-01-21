@@ -17,7 +17,7 @@ if you pass the `--genome` switch, it will use that genome's folder to find all 
 
 The above command will build the csv file looper needs to run the pipeline on all the sample files from LOLA.
 
-### 1. Validate yout PEP with [`eido`](https://github.com/pepkit/eido)
+### 1. Validate your PEP with [`eido`](https://github.com/pepkit/eido)
 
 The input PEP can be validated against the [JSON schema in this repository](pep_schema.yaml). This ensures the PEP consists of all required attributes to run `bedstat` pipeline.
 
@@ -80,7 +80,11 @@ docker run --link <ID OF ELASTIC CONTAINER HERE>:elasticsearch -p 5601:5601  doc
 
 Point your local web browser to http://localhost:5601
 
-### R Dependencies ###
+---
+
+## Dependencies
+
+### R
 
 Following R packages are necessary to run the code that processes BED files:
 
@@ -90,9 +94,10 @@ Following R packages are necessary to run the code that processes BED files:
 * GenomicRanges (via BiocManager::install)
 * GenomicDistributions (via devtools::install_github("databio/GenomicDistributions")
 * BSgenome (via BiocManager::install)
+* BSgenome.Hsapiens.UCSC.\<genome> *depending on the genome used* (via BiocManager::install) 
 * LOLA (via BiocManager::install)
 
-### Python dependencies ###
+### Python
 
 Following Python packages are necessary to run the bedstat pipeline:
 
