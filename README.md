@@ -3,17 +3,27 @@ EPISB pipeline for obtaining statistics about bed files
 
 ## How to use
 
-### 1. Convert a LOLA database into a PEP
+### 0. (optional) Convert a LOLA database into a PEP
 
-Run "scripts/process_LOLA.py" and feed it the location of your LOLA database copy. E.g.:
+*This step is required only if you start from a "LOLA Region Database"*
+
+Run `scripts/process_LOLA.py` and feed it the location of your LOLA database copy. E.g.:
 
 ```
 python3 scripts/process_LOLA.py --lola_loc /ext/qumulo/LOLAweb/databases/LOLACore > lolacore.csv
 ```
 
-if you pass the --genome switch, it will use that genome's folder to find all bed files. If not, it assumes "hg38".
+if you pass the `--genome` switch, it will use that genome's folder to find all bed files. If not, it assumes "hg38".
 
 The above command will build the csv file looper needs to run the pipeline on all the sample files from LOLA.
+
+### 1. Validate yout PEP with [`eido`](https://github.com/pepkit/eido)
+
+The input PEP can be validated against the [JSON schema in this repository](pep_schema.yaml). This ensures the PEP consists of all required attributes to run `bedstat` pipeline.
+
+```
+eido -p <path/to/pep> -s pep_schema.yaml
+```
 
 ### 2. Create a persistent volume to house elasticsearch data
 
