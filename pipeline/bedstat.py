@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from argparse import ArgumentParser
-import pypiper
 from elasticsearch import Elasticsearch
 import json
 import gzip
@@ -9,11 +8,8 @@ import yaml
 import os
 import sys
 
-# consts (some are shared with bedhost, common source needed)
-DEFAULT_BED_INDEX = "bedstat_bedfiles"
-SEARCH_TERMS = ['cellType', 'cellTypeSubtype', 'antibody', 'mappingGenome', 'description',
-                'tissue', 'species', 'protocol', 'genome']
-
+import pypiper
+from bbconf.const import *
 
 parser = ArgumentParser(
     description="A pipeline to read a file in BED format and produce metadata in JSON format.")
@@ -76,10 +72,10 @@ pm.run(command, target)
 
 # now get the resulting json file and load it into elasticsearch
 # it the file exists, of course
-if os.path.splitext(bedfile_portion)[1] != '':
+if not args.nodbcommit and os.path.splitext(bedfile_portion)[1] != '':
     # open connection to elastic
     try:
-        es = Elasticsearch([{'host': 'localhost'}])
+        es = Elasticsearch([{'host': args.dbhost}])
         json_file = os.path.splitext(bedfile_portion)[0] + ".json"
         json_file_path = os.path.abspath(os.path.join(outfolder, json_file))
         with open(json_file_path, 'r', encoding='utf-8') as f:
@@ -92,8 +88,8 @@ if os.path.splitext(bedfile_portion)[1] != '':
                     pm.warning(y)
                 # enrich the data from R with the data from the sample line itself
             pm.info("Inserting into database...")
-            es.index(index=DEFAULT_BED_INDEX, body=data)
-        es.index(index=DEFAULT_BED_INDEX, doc_type='doc', body=data)
+            es.index(index=BED_INDEX, body=data)
+        es.index(index=BED_INDEX, doc_type='doc', body=data)
     except Exception as e:
         print(e)
 

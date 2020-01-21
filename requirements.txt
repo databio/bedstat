@@ -2,3 +2,4 @@
 elasticsearch-dsl>=7.0.0,<8.0.0
 piper
 loopercli
+bbconf>=0.0.1
