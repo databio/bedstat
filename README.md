@@ -1,5 +1,15 @@
 # bedstat
-EPISB pipeline for obtaining statistics about bed files
+pipeline for obtaining statistics about bed files
+
+## Installation instructions
+
+1. Clone this repository
+2. Install the python packages listed in the `requirements.txt` file
+
+```
+pip install -r requirements.txt --user
+```
+3. Install additional dependacies listed below
 
 ## How to use
 
@@ -31,12 +41,6 @@ eido -p <path/to/pep> -s pep_schema.yaml
 docker volume create es-data
 ```
 
-**Note**: python elasticsearch-dsl module used to connect to elasticsearch MUST match the version of elasticsearch server running in Docker or locally. The requirements.txt file that comes with this code base is set up to fulfill this requirement. It can be installed via:
-
-```
-pip install -r requirements.txt --user
-```
-
 ### 3. Run the docker container for elasticsearch
 
 ```
@@ -44,14 +48,9 @@ docker run -p 9200:9200 -p 9300:9300 -v es-data:/usr/share/elasticsearch/data -e
   -e "discovery.type=single-node" elasticsearch:7.4.1
 ```
 
-```
-docker run -p 9200:9200 -p 9300:9300 -v /ext/qumulo/database/elastic:/usr/share/elasticsearch/data \
-  -e "xpack.ml.enabled=false" -e "discovery.type=single-node" elasticsearch:7.4.1
-```
-
 ### 4. Run the bedstat pipeline on the PEP
 
-Then simply run the looper command to invoke the pipeline:
+Then simply run the looper command to run the pipeline for each bed file. It will create a set of plots and statistics per bed file and insert the metadata into Elastic:
 
 ```
 looper run project/bedstat_config.yaml
@@ -82,11 +81,9 @@ Point your local web browser to http://localhost:5601
 
 ---
 
-## Dependencies
+## Additional dependencies
 
-### R
-
-Following R packages are necessary to run the code that processes BED files:
+an [R script](tools/regionstat.R) is used to calculate the bed file statistics, so the pipeline also depends on several R packages:
 
 * BiocManager
 * optparse
@@ -96,13 +93,4 @@ Following R packages are necessary to run the code that processes BED files:
 * BSgenome (via BiocManager::install)
 * BSgenome.Hsapiens.UCSC.\<genome> *depending on the genome used* (via BiocManager::install) 
 * LOLA (via BiocManager::install)
-
-### Python
-
-Following Python packages are necessary to run the bedstat pipeline:
-
-* pypiper (via pip install piper)
-* looper (via pip install loopercli)
-* elasticsearch-dsl
-
 
