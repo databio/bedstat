@@ -32,7 +32,7 @@ args = parser.parse_args()
 bbc = bbconf.BedBaseConf(filepath=bbconf.get_bedbase_cfg(args.bedbase_config))
 
 bedfile_name = os.path.split(args.bedfile)[1]
-fileid = os.path.splitext(bedfile_name)[0]
+fileid = os.path.splitext(os.path.splitext(bedfile_name)[0])[0]  # twice since there are 2 exts
 outfolder = os.path.abspath(os.path.join(bbc.path.bedstat_output, fileid))
 
 pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder, args=args)
@@ -60,8 +60,8 @@ if not args.nodbcommit:
                 data[key] = y[key]
             except KeyError:
                 pm.warning("Can't find key: {}".format(key))
-    pm.debug("Data: {}".format(data))
-    data[BEDFILE_PATH_KEY] = bedfile_name + ".gz"
-    bbc.insert_bedfile_data(data=data)
+    data[BEDFILE_PATH_KEY] = args.bedfile
+    pm.info("Data: {}".format(data))
+    bbc.insert_bedfiles_data(data=data)
 
 pm.stop_pipeline()
