@@ -60,7 +60,7 @@ if not args.nodbcommit:
                 data[key] = y[key]
             except KeyError:
                 pm.warning("Can't find key: {}".format(key))
-    data[BEDFILE_PATH_KEY] = args.bedfile
+    data[BEDFILE_PATH_KEY] = [args.bedfile]  # as a list to match how the statistics in regionstat are saved
     pm.info("Data: {}".format(data))
     bbc.insert_bedfiles_data(data=data)
 

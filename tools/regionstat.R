@@ -56,16 +56,16 @@ doitall <- function(query, fname, fileid, genome) {
     # different width/heights for presenting on screen in HTML and for PDFs    
 	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.png"), g, device="png", width=8, height=8, units="cm")
 	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.pdf"), g, device="pdf", width=12, height=12, units="cm")
-    
+        
 	bedmeta = list(
-	  id=fileid,
-		gc_content=mean(gcvec),
-		num_regions=length(query),
-		mean_abs_tss_dist=mean(abs(TSSdist), na.rm=TRUE),
+	    id=fileid,
+		GC_content=mean(gcvec),
+		number_of_regions=length(query),
+		mean_absoulute_TSS_distance=mean(abs(TSSdist), na.rm=TRUE),
 		genomic_partitions=gp,
-		md5sum=md5s
+		md5sum=md5s,
+		plots=data.frame(name=c("tssdist","chrombins","gccontent","partitions"), caption=c("Region-TSS distance distribution", "Regions distribution over chromosomes", "GC content", "Regions distribution over genomic partitions"))
 	)
-
 	write(jsonlite::toJSON(bedmeta, pretty=TRUE), paste0(outfolder,"/",fileid,".json"))
 }
 
