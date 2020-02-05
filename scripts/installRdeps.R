@@ -1,8 +1,25 @@
-install.packages("BiocManager"); library(BiocManager)
-install.packages("optparse")
-install.packages("devtools")
-BiocManager::install("GenomicRanges")
+.install_pkg = function(p, bioc=FALSE) {
+    if(!require(package = p, character.only=TRUE)) {
+        if(bioc) {
+            BiocManager::install(pkgs = p)
+        } else {
+            install.packages(pkgs = p)   
+        }
+    }
+}
+
+.install_pkg("BiocManager")
+.install_pkg("optparse")
+.install_pkg("devtools")
+.install_pkg("GenomicRanges", bioc=TRUE)
 devtools::install_github("databio/GenomicDistributions")
-BiocManager::install("BSgenome.Hsapiens.UCSC.hg19") # depending on the genome used
-BiocManager::install("BSgenome.Hsapiens.UCSC.hg19.masked")
-BiocManager::install("LOLA")
+genomes = list(Hsapiens = c("hg18","hg19","hg38"), 
+               Mmusculus = c("mm10","mm9"))
+for(name in names(genomes)) {
+    for(genome in genomes[[name]]) {
+        # should install non-masked too
+        .install_pkg(p = paste0("BSgenome.", name, 
+                                ".UCSC.", genome,".masked"))
+    }
+}
+.install_pkg("LOLA", bioc=TRUE)
