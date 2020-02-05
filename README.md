@@ -83,14 +83,19 @@ Point your local web browser to http://localhost:5601
 
 ## Additional dependencies
 
-an [R script](tools/regionstat.R) is used to calculate the bed file statistics, so the pipeline also depends on several R packages:
+[regionstat.R](tools/regionstat.R) script is used to calculate the bed file statistics, so the pipeline also depends on several R packages:
 
-* BiocManager
-* optparse
-* devtools
-* GenomicRanges (via BiocManager::install)
-* GenomicDistributions (via devtools::install_github("databio/GenomicDistributions")
-* BSgenome (via BiocManager::install)
-* BSgenome.Hsapiens.UCSC.\<genome> *depending on the genome used* (via BiocManager::install) 
-* LOLA (via BiocManager::install)
+* `BiocManager`
+* `optparse`
+* `devtools`
+* `GenomicRanges`
+* `GenomicDistributions`
+* `BSgenome.<organim>.UCSC.<genome>` *depending on the genome used* 
+* `LOLA`
+
+you can use [installRdeps.R](scripts/installRdeps.R) helper script to easily install the required packages:
+
+```
+Rscript scripts/installRdeps.R
+``` 
 
