@@ -51,22 +51,30 @@ doitall <- function(query, fname, fileid, genome) {
 	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_gccontent.pdf"), g, device="pdf", width=12, height=12, units="cm")
     
 	gp = calcPartitionsRef(query, genome)
-	gp$Perc = gp$Freq/length(query)
+	# flatten the result returned by the function above
+	partiotionNames = as.vector(gp[,"partition"])
+	partitionsList = list()
+	for(i in seq_along(partiotionNames)){
+	    partitionsList[[paste0(partiotionNames[i], "_frequency")]] = 
+	        as.vector(gp[,"Freq"])[i]
+	    partitionsList[[paste0(partiotionNames[i], "_percentage")]] = 
+	        as.vector(gp[,"Freq"])/length(query)[i]
+	}
 	g = plotPartitions(gp)
     # different width/heights for presenting on screen in HTML and for PDFs    
 	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.png"), g, device="png", width=8, height=8, units="cm")
 	ggplot2::ggsave(paste0(outfolder, "/", fileid, "_partitions.pdf"), g, device="pdf", width=12, height=12, units="cm")
-        
+    
+	# Note: names of the list elements MUST match what's defined in: https://github.com/databio/bbconf/blob/master/bbconf/const.py
 	bedmeta = list(
 	    id=fileid,
 		GC_content=mean(gcvec),
 		number_of_regions=length(query),
-		mean_absoulute_TSS_distance=mean(abs(TSSdist), na.rm=TRUE),
-		genomic_partitions=gp,
+		mean_absolute_TSS_distance=mean(abs(TSSdist), na.rm=TRUE),
 		md5sum=md5s,
 		plots=data.frame(name=c("tssdist","chrombins","gccontent","partitions"), caption=c("Region-TSS distance distribution", "Regions distribution over chromosomes", "GC content", "Regions distribution over genomic partitions"))
 	)
-	write(jsonlite::toJSON(bedmeta, pretty=TRUE), paste0(outfolder,"/",fileid,".json"))
+	write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileid, ".json"))
 }
 
 # set query to bed file
