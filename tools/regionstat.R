@@ -58,7 +58,7 @@ doitall <- function(query, fname, fileid, genome) {
 	    partitionsList[[paste0(partiotionNames[i], "_frequency")]] = 
 	        as.vector(gp[,"Freq"])[i]
 	    partitionsList[[paste0(partiotionNames[i], "_percentage")]] = 
-	        as.vector(gp[,"Freq"])/length(query)[i]
+	        as.vector(gp[,"Freq"])[i]/length(query)
 	}
 	g = plotPartitions(gp)
     # different width/heights for presenting on screen in HTML and for PDFs    
