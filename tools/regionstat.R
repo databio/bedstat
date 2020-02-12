@@ -68,8 +68,8 @@ doitall <- function(query, fname, fileid, genome) {
 	# Note: names of the list elements MUST match what's defined in: https://github.com/databio/bbconf/blob/master/bbconf/const.py
 	bedmeta = list(
 	    id=fileid,
-		GC_content=mean(gcvec),
-		number_of_regions=length(query),
+		gc_content=mean(gcvec),
+		regions_no=length(query),
 		mean_absolute_TSS_distance=mean(abs(TSSdist), na.rm=TRUE),
 		md5sum=md5s,
 		plots=data.frame(name=c("tssdist","chrombins","gccontent","partitions"), caption=c("Region-TSS distance distribution", "Regions distribution over chromosomes", "GC content", "Regions distribution over genomic partitions"))
