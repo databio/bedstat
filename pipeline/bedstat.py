@@ -64,5 +64,6 @@ if not args.no_db_commit:
                 data[key] = y[key]
             except KeyError:
                 print("Can't find key: {}".format(key))
+    data[BEDFILE_PATH_KEY] = [args.bedfile]
     print("Data: {}".format(data))
     bbc.insert_bedfiles_data(data=data)
