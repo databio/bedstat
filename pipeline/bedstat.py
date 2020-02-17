@@ -64,6 +64,11 @@ if not args.no_db_commit:
                 data[key] = y[key]
             except KeyError:
                 print("Can't find key: {}".format(key))
+    # the bedfile_path below needs to be overwritten in Elastic in case the pipeline run was split
+    # into two computing environments. Currently used for the development.
+    # This concept leverages the potability introduced by environment variable in the
+    # bedfile path in the PEP. Locally the environment variable points to a different path than on
+    # the compute cluster where the heavy calculations happen.
     data[BEDFILE_PATH_KEY] = [args.bedfile]
     print("Data: {}".format(data))
     bbc.insert_bedfiles_data(data=data)
