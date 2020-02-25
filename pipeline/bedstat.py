@@ -59,11 +59,6 @@ if not args.no_db_commit:
         # get the sample line from the yaml config file
         y = yaml.safe_load(open(args.sample_yaml, "r"))
         # enrich the data from R with the data from the sample line itself
-        for key in SEARCH_TERMS:
-            try:
-                data[key] = y[key]
-            except KeyError:
-                print("Can't find key: {}".format(key))
     # the bedfile_path below needs to be overwritten in Elastic in case the pipeline run was split
     # into two computing environments. Currently used for the development.
     # This concept leverages the potability introduced by environment variable in the
@@ -71,4 +66,4 @@ if not args.no_db_commit:
     # the compute cluster where the heavy calculations happen.
     data[BEDFILE_PATH_KEY] = [args.bedfile]
     print("Data: {}".format(data))
-    bbc.insert_bedfiles_data(data=data)
+    bbc.insert_bedfiles_data(data=data, doc_id=data[JSON_MD5SUM_KEY][0])
