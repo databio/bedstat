@@ -4,13 +4,15 @@ library(tools)
 
 option_list = list(
     make_option(c("--bedfile"), type="character", default=NULL, 
-              help="bed file to process", metavar="character"),
+              help="path to a BED file to process", metavar="character"),
 	make_option(c("--fileId"), type="character", default=NULL,
-              help="fileId to use for output files prefix", metavar="character"),
+              help="BED file ID to use for output files prefix", metavar="character"),
+    make_option(c("--digest"), type="character", default=NULL,
+                help="digest of the BED file", metavar="character"),
     make_option(c("--outputfolder"), type="character", default="output",
               help="base output folder for results", metavar="character"),
     make_option(c("--genome"), type="character", default="hg38",
-              help="genome to calculate against", metavar="character"))
+              help="genome reference to calculate against", metavar="character"))
  
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);    
@@ -25,6 +27,11 @@ if (is.null(opt$fileId)) {
     stop("fileId input missing.")
 }
 
+if (is.null(opt$digest)) {
+    print_help(opt_parser)
+    stop("digest input missing.")
+}
+
 plotBoth <- function(plotPth, g){
     print(paste0("Plotting: ", plotPth))
     ggplot2::ggsave(paste0(plotPth, ".png"), g, device="png", width=8, height=8, units="cm")
@@ -33,8 +40,6 @@ plotBoth <- function(plotPth, g){
 
 doitall <- function(query, fname, fileId, genome) {
     plots = data.frame(stringsAsFactors=F)
-    ## calculate md5 sum of bedfile
-    md5s <- as.vector(md5sum(fname))
 
     ## continue on with calculations
 	TSSdist = calcFeatureDistRefTSS(query, genome)
@@ -81,7 +86,7 @@ doitall <- function(query, fname, fileId, genome) {
 		gc_content=mean(gcvec),
 		regions_no=length(query),
 		mean_absolute_TSS_dist=mean(abs(TSSdist), na.rm=TRUE),
-		md5sum=md5s,
+		md5sum=opt$digest,
 		plots=plots,
 		bedfile_path=fname
 	)

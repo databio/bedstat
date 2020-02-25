@@ -8,6 +8,7 @@ __email__ = "michal@virginia.edu"
 __version__ = "0.0.1"
 
 from argparse import ArgumentParser
+from hashlib import md5
 import json
 import yaml
 import os
@@ -34,17 +35,18 @@ args = parser.parse_args()
 
 bbc = bbconf.BedBaseConf(filepath=bbconf.get_bedbase_cfg(args.bedbase_config))
 
+bed_digest = md5(open(args.bedfile, 'rb').read()).hexdigest()
 bedfile_name = os.path.split(args.bedfile)[1]
 fileid = os.path.splitext(os.path.splitext(bedfile_name)[0])[0]  # twice since there are 2 exts
-outfolder = os.path.abspath(os.path.join(bbc[CFG_PATH_KEY][CFG_PIP_OUTPUT_KEY], fileid))
+outfolder = os.path.abspath(os.path.join(bbc[CFG_PATH_KEY][CFG_PIP_OUTPUT_KEY], bed_digest))
 json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
 
 if not args.just_db_commit:
     pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder, args=args)
     rscript_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "regionstat.R")
     assert os.path.exists(rscript_path), FileNotFoundError("'{}' script not found".format(rscript_path))
-    cmd_vars = dict(rscript=rscript_path, bed=args.bedfile, id=fileid, out=outfolder, genome=args.genome_assembly)
-    command = "Rscript {rscript} --bedfile={bed} --fileId={id} --outputfolder={out} --genome={genome}".format(**cmd_vars)
+    cmd_vars = dict(rscript=rscript_path, bed=args.bedfile, id=fileid, out=outfolder, genome=args.genome_assembly, digest=bed_digest)
+    command = "Rscript {rscript} --bedfile={bed} --fileId={id} --outputfolder={out} --genome={genome} --digest={digest}".format(**cmd_vars)
     pm.run(cmd=command, target=json_file_path)
     pm.stop_pipeline()
 
@@ -66,4 +68,4 @@ if not args.no_db_commit:
     # the compute cluster where the heavy calculations happen.
     data[BEDFILE_PATH_KEY] = [args.bedfile]
     print("Data: {}".format(data))
-    bbc.insert_bedfiles_data(data=data, doc_id=data[JSON_MD5SUM_KEY][0])
+    bbc.insert_bedfiles_data(data=data, doc_id=bed_digest)
