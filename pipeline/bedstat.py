@@ -55,12 +55,19 @@ if not args.just_db_commit:
 if not args.no_db_commit:
     # open connection to elastic
     bbc.establish_elasticsearch_connection()
+    data = {}
     with open(json_file_path, 'r', encoding='utf-8') as f:
-        data = json.loads(f.read())
+        data[JSON_STATS_SECTION_KEY] = json.loads(f.read())
     if args.sample_yaml:
         # get the sample line from the yaml config file
         y = yaml.safe_load(open(args.sample_yaml, "r"))
-        # enrich the data from R with the data from the sample line itself
+        data[JSON_METADATA_SECTION_KEY] = {}
+        for key in SAMPLE_ATTRS:
+            try:
+                data[JSON_METADATA_SECTION_KEY][key] = y[key]
+            except KeyError:
+                pass
+    # enrich the data from R with the data from the sample line itself
     # the bedfile_path below needs to be overwritten in Elastic in case the pipeline run was split
     # into two computing environments. Currently used for the development.
     # This concept leverages the potability introduced by environment variable in the
@@ -69,3 +76,5 @@ if not args.no_db_commit:
     data[BEDFILE_PATH_KEY] = [args.bedfile]
     print("Data: {}".format(data))
     bbc.insert_bedfiles_data(data=data, doc_id=bed_digest)
+
+
