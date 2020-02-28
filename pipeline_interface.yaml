@@ -9,4 +9,4 @@ pipelines:
     arguments:
       "--bedfile": output_file_path
       "--genome": genome
-      "--sample_yaml": yaml_file
+      "--sample-yaml": yaml_file
