@@ -57,14 +57,14 @@ if not args.no_db_commit:
     bbc.establish_elasticsearch_connection()
     data = {}
     with open(json_file_path, 'r', encoding='utf-8') as f:
-        data[JSON_STATS_SECTION_KEY] = json.loads(f.read())
+        data = json.loads(f.read())
     if args.sample_yaml:
         # get the sample line from the yaml config file
         y = yaml.safe_load(open(args.sample_yaml, "r"))
-        data[JSON_METADATA_SECTION_KEY] = {}
+        data = {}
         for key in JSON_METADATA_VALUES:
             try:
-                data[JSON_METADATA_SECTION_KEY][key] = [y[key]]
+                data[key] = [y[key]]
             except KeyError:
                 print("'{}' metadata not available".format(key))
     # enrich the data from R with the data from the sample line itself
