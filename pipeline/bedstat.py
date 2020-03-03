@@ -62,10 +62,7 @@ if not args.no_db_commit:
         # get the sample line from the yaml config file
         y = yaml.safe_load(open(args.sample_yaml, "r"))
         data[JSON_METADATA_SECTION_KEY] = {}
-        yaml_metadata = [JSON_GENOME_KEY, JSON_PROTOCOL_KEY, JSON_CELL_TYPE_KEY,
-                        JSON_TISSUE_KEY, JSON_ANTIBODY_KEY, JSON_TREATMENT_KEY,
-                        JSON_DATA_SOURCE_KEY, JSON_DESCRIPTION_KEY] 
-        for key in yaml_metadata:
+        for key in JSON_METADATA_VALUES:
             try:
                 data[JSON_METADATA_SECTION_KEY][key] = [y[key]]
             except KeyError:
