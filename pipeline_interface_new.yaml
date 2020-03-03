@@ -8,6 +8,6 @@ pipelines:
     schema: pep_schema.yaml
     looper_args: True
     command_template: >
-      {{ pipeline.path }}
-      --bedfile {{ sample.output_file_path }}
-      --genome {{ sample.genome }}
+      { pipeline.path }
+      --bedfile { sample.output_file_path }
+      --genome { sample.genome }
