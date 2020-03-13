@@ -45,7 +45,7 @@ docker volume create es-data
 
 ```
 docker run -p 9200:9200 -p 9300:9300 -v es-data:/usr/share/elasticsearch/data -e "xpack.ml.enabled=false" \
-  -e "discovery.type=single-node" elasticsearch:7.4.1
+  -e "discovery.type=single-node" elasticsearch:7.5.1
 ```
 
 ### 4. Run the bedstat pipeline on the PEP
@@ -62,9 +62,9 @@ The data loaded into elasticsearch should persist between elasticsearch invocati
 
 Kibana can be used in order to see ElasticSearch data in a "GUI" kind of a way.
 
-Pull the Kibana docker image:
+Pull a matching Kibana docker image. Make sure the Elasticsearch and Kibana container tags match:
 ```
-docker pull docker.elastic.co/kibana/kibana:6.5.4
+docker pull docker.elastic.co/kibana/kibana:7.5.1
 ```
 
 Get the ID of the docker container (started above) running ElasticSearch via 
