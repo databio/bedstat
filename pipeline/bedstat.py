@@ -60,13 +60,15 @@ if not args.no_db_commit:
         data = json.loads(f.read())
     if args.sample_yaml:
         # get the sample line from the yaml config file
-        y = yaml.safe_load(open(args.sample_yaml, "r"))
-        data = {}
-        for key in JSON_METADATA_VALUES:
-            try:
-                data[key] = [y[key]]
-            except KeyError:
-                print("'{}' metadata not available".format(key))
+        if os.path.exists(args.sample_yaml):
+            y = yaml.safe_load(open(args.sample_yaml, "r"))
+            for key in JSON_METADATA_VALUES:
+                try:
+                    data[key] = [y[key]]
+                except KeyError:
+                    print("'{}' metadata not available".format(key))
+        else:
+            warnings.warn("Specified sample_yaml path does not exist: {}".format(args.sample_yaml))
     # enrich the data from R with the data from the sample line itself
     # the bedfile_path below needs to be overwritten in Elastic in case the pipeline run was split
     # into two computing environments. Currently used for the development.
