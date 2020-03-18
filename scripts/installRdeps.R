@@ -11,7 +11,7 @@
 .install_pkg("BiocManager")
 .install_pkg("optparse")
 .install_pkg("devtools")
-devtools::install_github("databio/GenomicDistributions")
+devtools::install_github("databio/GenomicDistributions", ref="dev")
 genomes = list(Hsapiens = c("hg18","hg19","hg38"), 
                Mmusculus = c("mm10","mm9"))
 for(name in names(genomes)) {
