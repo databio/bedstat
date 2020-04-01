@@ -7,7 +7,7 @@ option_list = list(
               help="path to a BED file to process", metavar="character"),
 	make_option(c("--fileId"), type="character", default=NULL,
               help="BED file ID to use for output files prefix", metavar="character"),
-	make_option(c("openSignalMatrix", type="character", default=NULL,
+	make_option(c("--openSignalMatrix", type="character", default=NULL,
 				help="path to the open signal matrix required for the tissue specificity plot", metavar="character"))
     make_option(c("--digest"), type="character", default=NULL,
                 help="digest of the BED file", metavar="character"),

@@ -47,8 +47,8 @@ if not args.just_db_commit:
     pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder, args=args)
     rscript_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "regionstat.R")
     assert os.path.exists(rscript_path), FileNotFoundError("'{}' script not found".format(rscript_path))
-    cmd_vars = dict(rscript=rscript_path, bed=args.bedfile, id=fileid, out=outfolder, genome=args.genome_assembly, digest=bed_digest)
-    command = "Rscript {rscript} --bedfile={bed} --fileId={id} --outputfolder={out} --genome={genome} --digest={digest}".format(**cmd_vars)
+    cmd_vars = dict(rscript=rscript_path, bed=args.bedfile, id=fileid, matrix=args.openSignalMatrix, out=outfolder, genome=args.genome_assembly, digest=bed_digest)
+    command = "Rscript {rscript} --bedfile={bed} --fileId={id} --openSignalMatrix={matrix} --outputfolder={out} --genome={genome} --digest={digest}".format(**cmd_vars)
     pm.run(cmd=command, target=json_file_path)
     pm.stop_pipeline()
 

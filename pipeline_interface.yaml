@@ -9,4 +9,8 @@ pipelines:
     arguments:
       "--bedfile": output_file_path
       "--genome": genome
+      "--openSignalMatrix":
       "--sample-yaml": yaml_file
+    optional_arguments:
+       "--openSignalMatrix": openSignalMatrix
+
