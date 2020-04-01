@@ -7,8 +7,8 @@ option_list = list(
               help="path to a BED file to process", metavar="character"),
 	make_option(c("--fileId"), type="character", default=NULL,
               help="BED file ID to use for output files prefix", metavar="character"),
-	make_option(c("--openSignalMatrix", type="character", default=NULL,
-				help="path to the open signal matrix required for the tissue specificity plot", metavar="character"))
+	make_option(c("--openSignalMatrix"), type="character", default=NULL,
+			  help="path to the open signal matrix required for the tissue specificity plot", metavar="character"),
     make_option(c("--digest"), type="character", default=NULL,
                 help="digest of the BED file", metavar="character"),
     make_option(c("--outputfolder"), type="character", default="output",
@@ -52,12 +52,12 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
     plots = rbind(plots, newPlot)
     
     
-	x = calcChromBinsRef(query, genome)
-    plotId = "chrombins"
-    plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
-             plotChromBins(x))
-    newPlot = data.frame("name"=plotId, "caption"="Regions distribution over chromosomes")
-    plots = rbind(plots, newPlot)
+	#x = calcChromBinsRef(query, genome)
+    #plotId = "chrombins"
+    #plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
+             #plotChromBins(x))
+    #newPlot = data.frame("name"=plotId, "caption"="Regions distribution over chromosomes")
+    #plots = rbind(plots, newPlot)
     
 	gcvec = calcGCContentRef(query, genome)
 	plotId = "gccontent"
@@ -93,7 +93,7 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
 	plots = rbind(plots, newPlot)
 
 	# Add tissue specificity plot
-	if (!is.null(cellmatrix) {
+	if (!is.null(cellmatrix)) {
 		op = calcOpenSignal(query, cellmatrix)
 		plotId = "Open chromatin"
 		plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
@@ -108,7 +108,7 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
 		gc_content=mean(gcvec),
 		regions_no=length(query),
 		mean_absolute_TSS_dist=mean(abs(TSSdist), na.rm=TRUE),
-		mean_region_width=mean(widths)
+		mean_region_width=mean(widths),
 		md5sum=opt$digest,
 		plots=plots,
 		bedfile_path=fname
