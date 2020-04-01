@@ -20,6 +20,8 @@ import bbconf
 parser = ArgumentParser(description="A pipeline to read a file in BED format and produce metadata in JSON format.")
 
 parser.add_argument('--bedfile', help='a full path to bed file to process', required=True)
+parser.add_argument('--openSignalMatrix', help='a full path to the openSignalMatrix required for the tissue specificity plots',
+                     type=str, required=False)
 parser.add_argument("--bedbase-config", dest="bedbase_config", type=str, required=False, default=None,
                     help="a path to the bedbase configuratiion file")
 parser.add_argument("-y", "--sample-yaml", dest="sample_yaml", type=str, required=False,

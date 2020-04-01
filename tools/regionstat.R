@@ -7,6 +7,8 @@ option_list = list(
               help="path to a BED file to process", metavar="character"),
 	make_option(c("--fileId"), type="character", default=NULL,
               help="BED file ID to use for output files prefix", metavar="character"),
+	make_option(c("openSignalMatrix", type="character", default=NULL,
+				help="path to the open signal matrix required for the tissue specificity plot", metavar="character"))
     make_option(c("--digest"), type="character", default=NULL,
                 help="digest of the BED file", metavar="character"),
     make_option(c("--outputfolder"), type="character", default="output",
@@ -38,7 +40,7 @@ plotBoth <- function(plotPth, g){
     ggplot2::ggsave(paste0(plotPth, ".pdf"), g, device="pdf", width=12, height=12, units="cm")
 }
 
-doitall <- function(query, fname, fileId, genome) {
+doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
     plots = data.frame(stringsAsFactors=F)
 
     ## continue on with calculations
@@ -78,14 +80,35 @@ doitall <- function(query, fname, fileId, genome) {
 	    partitionsList[[paste0(partiotionNames[i], "_frequency")]] = 
 	        as.vector(gp[,"Freq"])[i]
 	    partitionsList[[paste0(partiotionNames[i], "_percentage")]] = 
-	        as.vector(gp[,"Freq"])[i]/length(query)
+	        as.vector(gp[,"Freq"])[i]/length(query)	        
 	}
+	
+	# Add plots from hackaton
+	# Add QThist plot
+	widths = calcWidth(query)
+	plotId = "Widths histogram"
+	plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
+		plotQTHist(widths))
+	newPlot = data.frame("name"=plotId, "caption"="Quantile-Trimmed Histogram of Widths")
+	plots = rbind(plots, newPlot)
+
+	# Add tissue specificity plot
+	if (!is.null(cellmatrix) {
+		op = calcOpenSignal(query, cellmatrix)
+		plotId = "Open chromatin"
+		plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
+			plotOpenSignal(op))
+		newPlot = data.frame("name"=plotId, "caption"="Cell specific enrichment for open chromatin")
+		plots = rbind(plots, newPlot)
+	}
+
 	# Note: names of the list elements MUST match what's defined in: https://github.com/databio/bbconf/blob/master/bbconf/const.py
 	bedmeta = list(
 	    id=fileId,
 		gc_content=mean(gcvec),
 		regions_no=length(query),
 		mean_absolute_TSS_dist=mean(abs(TSSdist), na.rm=TRUE),
+		mean_region_width=mean(widths)
 		md5sum=opt$digest,
 		plots=plots,
 		bedfile_path=fname
@@ -100,4 +123,11 @@ outfolder = opt$outputfolder
 genome = opt$genome
 
 query = LOLA::readBed(fn)
-doitall(query, fn, fileId, genome)
+if (!is.null(opt$openSignalMatrix)){
+	osm = opt$openSignalMatrix
+	cellMatrix = data.table::fread(osm)
+	doitall(query, fn, fileId, genome, cellMatrix)
+} else {
+	doitall(query, fn, fileId, genome)
+}
+
