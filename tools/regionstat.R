@@ -36,8 +36,8 @@ if (is.null(opt$digest)) {
 
 plotBoth <- function(plotPth, g){
     print(paste0("Plotting: ", plotPth))
-    ggplot2::ggsave(paste0(plotPth, ".png"), g, device="png", width=8, height=8, units="cm")
-    ggplot2::ggsave(paste0(plotPth, ".pdf"), g, device="pdf", width=12, height=12, units="cm")
+    ggplot2::ggsave(paste0(plotPth, ".png"), g, device="png", width=8, height=8, units="in")
+    ggplot2::ggsave(paste0(plotPth, ".pdf"), g, device="pdf", width=8, height=8, units="in")
 }
 
 doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
@@ -86,7 +86,7 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
 	# Add plots from hackaton
 	# Add QThist plot
 	widths = calcWidth(query)
-	plotId = "Widths histogram"
+	plotId = "widths_histogram"
 	plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
 		plotQTHist(widths))
 	newPlot = data.frame("name"=plotId, "caption"="Quantile-Trimmed Histogram of Widths")
@@ -95,7 +95,7 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
 	# Add tissue specificity plot
 	if (!is.null(cellmatrix)) {
 		op = calcOpenSignal(query, cellmatrix)
-		plotId = "Open chromatin"
+		plotId = "open_chromatin"
 		plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
 			plotOpenSignal(op))
 		newPlot = data.frame("name"=plotId, "caption"="Cell specific enrichment for open chromatin")
