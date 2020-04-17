@@ -10,7 +10,7 @@ option_list = list(
 	make_option(c("--openSignalMatrix"), type="character", default=NULL,
 			  help="path to the open signal matrix required for the tissue specificity plot", metavar="character"),
     make_option(c("--digest"), type="character", default=NULL,
-                help="digest of the BED file", metavar="character"),
+              help="digest of the BED file", metavar="character"),
     make_option(c("--outputfolder"), type="character", default="output",
               help="base output folder for results", metavar="character"),
     make_option(c("--genome"), type="character", default="hg38",
@@ -34,6 +34,7 @@ if (is.null(opt$digest)) {
     stop("digest input missing.")
 }
 
+
 plotBoth <- function(plotPth, g){
     print(paste0("Plotting: ", plotPth))
     ggplot2::ggsave(paste0(plotPth, ".png"), g, device="png", width=8, height=8, units="in")
@@ -52,19 +53,24 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
     plots = rbind(plots, newPlot)
     
     
-	#x = calcChromBinsRef(query, genome)
-    #plotId = "chrombins"
-    #plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
-             #plotChromBins(x))
-    #newPlot = data.frame("name"=plotId, "caption"="Regions distribution over chromosomes")
-    #plots = rbind(plots, newPlot)
-    
-	gcvec = calcGCContentRef(query, genome)
-	plotId = "gccontent"
-    plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
-             plotGCContent(gcvec))
-    newPlot = data.frame("name"=plotId, "caption"="GC content")
+	x = calcChromBinsRef(query, genome)
+    plotId = "chrombins"
+    plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
+             plotChromBins(x))
+    newPlot = data.frame("name"=plotId, "caption"="Regions distribution over chromosomes")
     plots = rbind(plots, newPlot)
+    
+	# OPTIONAL: Plot GC content only if proper BSgenome package is installed. 
+	if (!(requireNamespace(BSg, quietly=TRUE) | requireNamespace(BSgm, quietly=TRUE))) {
+		message(paste0(genome, " ", "BSgenome package is not installed."))
+	} else {
+		gcvec = calcGCContentRef(query, genome)
+		plotId = "gccontent"
+		plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
+					plotGCContent(gcvec))
+		newPlot = data.frame("name"=plotId, "caption"="GC content")
+		plots = rbind(plots, newPlot)
+	}
     
 	gp = calcPartitionsRef(query, genome)
 	plotId = "partitions"
@@ -72,7 +78,15 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
 	         plotPartitions(gp))
 	newPlot = data.frame("name"=plotId, "caption"="Regions distribution over genomic partitions")
 	plots = rbind(plots, newPlot)
-	
+
+	cp = calcCumulativePartitionsRef(query, genome)
+	plotId = "cumulative_partitions"
+	plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
+			 plotCumulativePartitions(gp))
+	newPlot = data.frame("name"=plotId, "caption"="Cumulative distribution over genomic partitions")
+	plots = rbind(plots, newPlot)
+
+
 	# flatten the result returned by the function above
 	partiotionNames = as.vector(gp[,"partition"])
 	partitionsList = list()
@@ -83,7 +97,6 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
 	        as.vector(gp[,"Freq"])[i]/length(query)	        
 	}
 	
-	# Add plots from hackaton
 	# Add QThist plot
 	widths = calcWidth(query)
 	plotId = "widths_histogram"
@@ -92,7 +105,7 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
 	newPlot = data.frame("name"=plotId, "caption"="Quantile-Trimmed Histogram of Widths")
 	plots = rbind(plots, newPlot)
 
-	# Add tissue specificity plot
+	# OPTIONAL: Add tissue specificity plot if open signal matrix is provided
 	if (!is.null(cellmatrix)) {
 		op = calcOpenSignal(query, cellmatrix)
 		plotId = "open_chromatin"
@@ -116,12 +129,24 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
 	write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
 }
 
-# set query to bed file
+# define values and output folder for doitall()
 fileId = opt$fileId
 fn = opt$bedfile
 outfolder = opt$outputfolder
 genome = opt$genome
+orgName = ""
 
+# build BSgenome package ID to check whether it's installed
+if (startsWith(genome, "hg") | startsWith(genome, "grch")) {
+  orgName = "Hsapiens"
+} else {
+  orgName = "Mmusculus"
+}
+
+BSg = paste0("BSgenome.",orgName ,".UCSC.", genome)
+BSgm = paste0(BSgenome, ".masked")
+
+# read bed file and run doitall()
 query = LOLA::readBed(fn)
 if (!is.null(opt$openSignalMatrix)){
 	osm = opt$openSignalMatrix
