@@ -82,7 +82,7 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
 	cp = calcCumulativePartitionsRef(query, genome)
 	plotId = "cumulative_partitions"
 	plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
-			 plotCumulativePartitions(gp))
+			 plotCumulativePartitions(cp))
 	newPlot = data.frame("name"=plotId, "caption"="Cumulative distribution over genomic partitions")
 	plots = rbind(plots, newPlot)
 
