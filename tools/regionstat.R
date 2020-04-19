@@ -144,7 +144,7 @@ if (startsWith(genome, "hg") | startsWith(genome, "grch")) {
 }
 
 BSg = paste0("BSgenome.",orgName ,".UCSC.", genome)
-BSgm = paste0(BSgenome, ".masked")
+BSgm = paste0(BSg, ".masked")
 
 # read bed file and run doitall()
 query = LOLA::readBed(fn)
