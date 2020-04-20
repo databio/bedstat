@@ -40,7 +40,7 @@ bbc = bbconf.BedBaseConf(filepath=bbconf.get_bedbase_cfg(args.bedbase_config))
 bed_digest = md5(open(args.bedfile, 'rb').read()).hexdigest()
 bedfile_name = os.path.split(args.bedfile)[1]
 fileid = os.path.splitext(os.path.splitext(bedfile_name)[0])[0]  # twice since there are 2 exts
-outfolder = os.path.abspath(os.path.join(bbc[CFG_PATH_KEY][CFG_PIP_OUTPUT_KEY], bed_digest))
+outfolder = os.path.abspath(os.path.join(bbc[CFG_PATH_KEY][CFG_BEDSTAT_OUTPUT_KEY], bed_digest))
 json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
 
 if not args.just_db_commit:
