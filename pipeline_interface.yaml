@@ -11,5 +11,5 @@ pipelines:
       "--genome": genome
       "--sample-yaml": yaml_file
     optional_arguments:
-       "--openSignalMatrix": openSignalMatrix
+       "--openSignalMatrix": open_signal_matrix
 

@@ -7,7 +7,7 @@ option_list = list(
               help="path to a BED file to process", metavar="character"),
 	make_option(c("--fileId"), type="character", default=NULL,
               help="BED file ID to use for output files prefix", metavar="character"),
-	make_option(c("--openSignalMatrix"), type="character", default=NULL,
+	make_option(c("--openSignalMatrix"), type="character",
 			  help="path to the open signal matrix required for the tissue specificity plot", metavar="character"),
     make_option(c("--digest"), type="character", default=NULL,
               help="digest of the BED file", metavar="character"),
@@ -106,8 +106,11 @@ doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
 	plots = rbind(plots, newPlot)
 
 	# OPTIONAL: Add tissue specificity plot if open signal matrix is provided
-	if (!is.null(cellmatrix)) {
-		op = calcOpenSignal(query, cellmatrix)
+	if (cellMatrix == "None") {
+		message("open signal matrix not provided. Skipping tissue specificity plot ... ")
+	} else {
+		matrix = data.table::fread(cellMatrix)
+		op = calcOpenSignal(query, matrix)
 		plotId = "open_chromatin"
 		plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
 			plotOpenSignal(op))
@@ -134,6 +137,7 @@ fileId = opt$fileId
 fn = opt$bedfile
 outfolder = opt$outputfolder
 genome = opt$genome
+cellMatrix = opt$openSignalMatrix
 orgName = ""
 
 # build BSgenome package ID to check whether it's installed
@@ -148,11 +152,6 @@ BSgm = paste0(BSg, ".masked")
 
 # read bed file and run doitall()
 query = LOLA::readBed(fn)
-if (!is.null(opt$openSignalMatrix)){
-	osm = opt$openSignalMatrix
-	cellMatrix = data.table::fread(osm)
-	doitall(query, fn, fileId, genome, cellMatrix)
-} else {
-	doitall(query, fn, fileId, genome)
-}
+doitall(query, fn, fileId, genome, cellMatrix)
+
 
