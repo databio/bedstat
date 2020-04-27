@@ -41,7 +41,7 @@ plotBoth <- function(plotPth, g){
     ggplot2::ggsave(paste0(plotPth, ".pdf"), g, device="pdf", width=8, height=8, units="in")
 }
 
-doitall <- function(query, fname, fileId, genome, cellmatrix=NULL) {
+doitall <- function(query, fname, fileId, genome, cellMatrix) {
     plots = data.frame(stringsAsFactors=F)
 
     ## continue on with calculations
