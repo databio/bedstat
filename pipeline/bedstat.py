@@ -20,7 +20,7 @@ import bbconf
 parser = ArgumentParser(description="A pipeline to read a file in BED format and produce metadata in JSON format.")
 
 parser.add_argument('--bedfile', help='a full path to bed file to process', required=True)
-parser.add_argument('--openSignalMatrix', help='a full path to the openSignalMatrix required for the tissue specificity plots',
+parser.add_argument('--open-signal-matrix', help='a full path to the openSignalMatrix required for the tissue specificity plots',
                      type=str, required=False, default=None)
 parser.add_argument("--bedbase-config", dest="bedbase_config", type=str, required=False, default=None,
                     help="a path to the bedbase configuratiion file")
@@ -47,7 +47,7 @@ if not args.just_db_commit:
     pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder, args=args)
     rscript_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "regionstat.R")
     assert os.path.exists(rscript_path), FileNotFoundError("'{}' script not found".format(rscript_path))
-    cmd_vars = dict(rscript=rscript_path, bed=args.bedfile, id=fileid, matrix=args.openSignalMatrix, out=outfolder, genome=args.genome_assembly, digest=bed_digest)
+    cmd_vars = dict(rscript=rscript_path, bed=args.bedfile, id=fileid, matrix=args.open_signal_matrix, out=outfolder, genome=args.genome_assembly, digest=bed_digest)
     command = "Rscript {rscript} --bedfile={bed} --fileId={id} --openSignalMatrix={matrix} --outputfolder={out} --genome={genome} --digest={digest}".format(**cmd_vars)
     pm.run(cmd=command, target=json_file_path)
     pm.stop_pipeline()
