@@ -4,4 +4,4 @@ looper:
   output_dir: output
 sample_modifiers:
   append:
-    pipeline_interfaces: ../pipeline_interface.yaml
+    pipeline_interfaces: ../pipeline_interface_new.yaml
