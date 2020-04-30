@@ -14,8 +14,8 @@ import yaml
 import os
 import warnings
 
-import pypiper
 from bbconf.const import *
+import pypiper
 import bbconf
 
 parser = ArgumentParser(

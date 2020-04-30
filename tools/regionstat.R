@@ -41,7 +41,7 @@ plotBoth <- function(plotPth, g){
     ggplot2::ggsave(paste0(plotPth, ".pdf"), g, device="pdf", width=8, height=8, units="in")
 }
 
-doitall <- function(query, fname, fileId, genome, cellMatrix) {
+doItAall <- function(query, fname, fileId, genome, cellMatrix) {
     plots = data.frame(stringsAsFactors=F)
 
     ## continue on with calculations
@@ -112,8 +112,8 @@ doitall <- function(query, fname, fileId, genome, cellMatrix) {
 		matrix = data.table::fread(cellMatrix)
 		op = calcOpenSignal(query, matrix)
 		plotId = "open_chromatin"
-		plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
-			plotOpenSignal(op))
+		plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
+		         plotOpenSignal(op))
 		newPlot = data.frame("name"=plotId, "caption"="Cell specific enrichment for open chromatin")
 		plots = rbind(plots, newPlot)
 	}
@@ -138,20 +138,16 @@ fn = opt$bedfile
 outfolder = opt$outputfolder
 genome = opt$genome
 cellMatrix = opt$openSignalMatrix
-orgName = ""
+orgName = "Mmusculus"
 
 # build BSgenome package ID to check whether it's installed
-if (startsWith(genome, "hg") | startsWith(genome, "grch")) {
-  orgName = "Hsapiens"
-} else {
-  orgName = "Mmusculus"
-}
+if (startsWith(genome, "hg") | startsWith(genome, "grch")) orgName = "Hsapiens"
 
-BSg = paste0("BSgenome.",orgName ,".UCSC.", genome)
+BSg = paste0("BSgenome.", orgName , ".UCSC.", genome)
 BSgm = paste0(BSg, ".masked")
 
 # read bed file and run doitall()
 query = LOLA::readBed(fn)
-doitall(query, fn, fileId, genome, cellMatrix)
+doItAall(query, fn, fileId, genome, cellMatrix)
 
 
