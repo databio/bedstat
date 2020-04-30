@@ -32,7 +32,7 @@ The above command will build the csv file looper needs to run the pipeline on al
 The input PEP can be validated against the [JSON schema in this repository](pep_schema.yaml). This ensures the PEP consists of all required attributes to run `bedstat` pipeline.
 
 ```
-eido -p <path/to/pep> -s pep_schema.yaml
+eido validate <path/to/pep> -s https://schema.databio.org/pipelines/bedstat.yaml
 ```
 
 ### 2. Create a persistent volume to house elasticsearch data
