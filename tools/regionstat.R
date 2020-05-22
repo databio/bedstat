@@ -53,6 +53,7 @@ doItAall <- function(query, fname, fileId, genome, cellMatrix) {
     plots = rbind(plots, newPlot)
     
     
+    # Chromosomes region distribution plot
 	x = calcChromBinsRef(query, genome)
     plotId = "chrombins"
     plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
@@ -72,11 +73,19 @@ doItAall <- function(query, fname, fileId, genome, cellMatrix) {
 		plots = rbind(plots, newPlot)
 	}
     
+    # Partition Plots, default to percentages
 	gp = calcPartitionsRef(query, genome)
 	plotId = "partitions"
 	plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
 	         plotPartitions(gp))
 	newPlot = data.frame("name"=plotId, "caption"="Regions distribution over genomic partitions")
+	plots = rbind(plots, newPlot)
+
+	ep = calcExpectedPartitionsRef(query, genome)
+	plotId = "expected_partitions"
+	plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
+	         plotExpectedPartitions(ep))
+	newPlot = data.frame("name"=plotId, "caption"="Expected distribution over genomic partitions")
 	plots = rbind(plots, newPlot)
 
 	cp = calcCumulativePartitionsRef(query, genome)
@@ -97,12 +106,20 @@ doItAall <- function(query, fname, fileId, genome, cellMatrix) {
 	        as.vector(gp[,"Freq"])[i]/length(query)	        
 	}
 	
-	# Add QThist plot
+	# QThist plot
 	widths = calcWidth(query)
 	plotId = "widths_histogram"
 	plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
 		plotQTHist(widths))
 	newPlot = data.frame("name"=plotId, "caption"="Quantile-Trimmed Histogram of Widths")
+	plots = rbind(plots, newPlot)
+
+	# Neighbor regions distance plots
+	dist = calcNeighborDist(query)
+	plotId = "neighbor_distances"
+	plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
+	         plotNeighborDist(dist))
+	newPlot = data.frame("name"=plotId, "caption"="Distance between neighbor regions")
 	plots = rbind(plots, newPlot)
 
 	# OPTIONAL: Add tissue specificity plot if open signal matrix is provided
