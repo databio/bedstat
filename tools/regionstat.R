@@ -1,6 +1,8 @@
 library(GenomicDistributions)
+library(GenomicDistributionsData)
 library(optparse)
 library(tools)
+data(TSS_hg38)
 
 option_list = list(
     make_option(c("--bedfile"), type="character", default=NULL, 
