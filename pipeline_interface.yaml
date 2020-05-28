@@ -10,3 +10,6 @@ pipelines:
       "--bedfile": output_file_path
       "--genome": genome
       "--sample-yaml": yaml_file
+    optional_arguments:
+       "--open-signal-matrix": open_signal_matrix
+

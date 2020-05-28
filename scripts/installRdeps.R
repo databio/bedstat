@@ -8,19 +8,18 @@
     }
 }
 
+.install_pkg("R.utils")
 .install_pkg("BiocManager")
 .install_pkg("optparse")
 .install_pkg("devtools")
-devtools::install_github("databio/GenomicDistributions", ref="dev")
-genomes = list(Hsapiens = c("hg18","hg19","hg38"), 
-               Mmusculus = c("mm10","mm9"))
-for(name in names(genomes)) {
-    for(genome in genomes[[name]]) {
-        # should install non-masked too
-        .install_pkg(p=paste0("BSgenome.", name, 
-                                ".UCSC.", genome,".masked"), 
-                     bioc=TRUE)
-    }
-}
 .install_pkg("GenomicRanges", bioc=TRUE)
+.install_pkg("GenomicFeatures", bioc=TRUE)
+.install_pkg("ensembldb", bioc=TRUE)
 .install_pkg("LOLA", bioc=TRUE)
+.install_pkg("BSgenome", bioc=TRUE)
+if(!require(package = "GenomicDistributions", character.only=TRUE)) {
+    devtools::install_github("databio/GenomicDistributions")
+}
+if(!require(package = "GenomicDistributionsData", character.only=TRUE)) {
+    install.packages("http://big.databio.org/GenomicDistributionsData/GenomicDistributionsData_0.0.1.tar.gz", repos=NULL)
+}
