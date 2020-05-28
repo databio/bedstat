@@ -8,6 +8,7 @@
     }
 }
 
+.install_pkg("R.utils")
 .install_pkg("BiocManager")
 .install_pkg("optparse")
 .install_pkg("devtools")
