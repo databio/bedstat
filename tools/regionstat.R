@@ -45,7 +45,7 @@ plotBoth <- function(plotPth, g){
 
 doItAall <- function(query, fname, fileId, genome, cellMatrix) {
     plots = data.frame(stringsAsFactors=F)
-
+    bsGenomeAvail = ifelse((requireNamespace(BSg, quietly=TRUE) | requireNamespace(BSgm, quietly=TRUE)), TRUE, FALSE)
     ## continue on with calculations
 	TSSdist = calcFeatureDistRefTSS(query, genome)
 	plotId = "tssdist"
@@ -64,9 +64,7 @@ doItAall <- function(query, fname, fileId, genome, cellMatrix) {
     plots = rbind(plots, newPlot)
     
 	# OPTIONAL: Plot GC content only if proper BSgenome package is installed. 
-	if (!(requireNamespace(BSg, quietly=TRUE) | requireNamespace(BSgm, quietly=TRUE))) {
-		message(paste0(genome, " ", "BSgenome package is not installed."))
-	} else {
+	if (bsGenomeAvail) {
 		gcvec = calcGCContentRef(query, genome)
 		plotId = "gccontent"
 		plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
@@ -74,7 +72,6 @@ doItAall <- function(query, fname, fileId, genome, cellMatrix) {
 		newPlot = data.frame("name"=plotId, "caption"="GC content")
 		plots = rbind(plots, newPlot)
 	}
-    
     # Partition Plots, default to percentages
 	gp = calcPartitionsRef(query, genome)
 	plotId = "partitions"
@@ -140,7 +137,7 @@ doItAall <- function(query, fname, fileId, genome, cellMatrix) {
 	# Note: names of the list elements MUST match what's defined in: https://github.com/databio/bbconf/blob/master/bbconf/const.py
 	bedmeta = list(
 	    id=fileId,
-		gc_content=mean(gcvec),
+		gc_content=ifelse(bsGenomeAvail, mean(gcvec), NA),
 		regions_no=length(query),
 		mean_absolute_TSS_dist=mean(abs(TSSdist), na.rm=TRUE),
 		mean_region_width=mean(widths),
