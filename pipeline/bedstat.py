@@ -74,10 +74,8 @@ if not args.just_db_commit:
     pm.stop_pipeline()
 
 # now get the resulting json file and load it into Elasticsearch
-# it the file exists, of course
+# if the file exists, of course
 if not args.no_db_commit:
-    # open connection to elastic
-    bbc.establish_elasticsearch_connection()
     data = {}
     with open(json_file_path, 'r', encoding='utf-8') as f:
         data = json.loads(f.read())
@@ -101,7 +99,10 @@ if not args.no_db_commit:
     # environment variable points to a different path than on the compute
     # cluster where the heavy calculations happen.
     data[BEDFILE_PATH_KEY] = [args.bedfile]
-    print("Data: {}".format(data))
-    bbc.insert_bedfiles_data(data=data, doc_id=bed_digest)
-
-
+    # unlist the data, since the output of regionstat.R is a dict of lists of
+    # length 1 and force keys to lower to correspond with the
+    # postgres column indentifiers
+    data = {k.lower(): v[0] if isinstance(v, list) else v for k, v in data.items()}
+    if not bbc.check_bedfiles_table_exists():
+        bbc.create_bedfiles_table(columns=BED_COLUMNS)
+    bbc.insert_bedfile_data(values=data)

@@ -136,7 +136,7 @@ doItAall <- function(query, fname, fileId, genome, cellMatrix) {
 
 	# Note: names of the list elements MUST match what's defined in: https://github.com/databio/bbconf/blob/master/bbconf/const.py
 	bedmeta = list(
-	    id=fileId,
+	    name=fileId,
 		gc_content=ifelse(bsGenomeAvail, mean(gcvec), NA),
 		regions_no=length(query),
 		mean_absolute_TSS_dist=mean(abs(TSSdist), na.rm=TRUE),
