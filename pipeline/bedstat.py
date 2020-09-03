@@ -80,12 +80,14 @@ if not args.no_db_commit:
     with open(json_file_path, 'r', encoding='utf-8') as f:
         data = json.loads(f.read())
     if args.sample_yaml:
-        # get the sample line from the yaml config file
+        # get the sample-specific metadata from the sample yaml representation
         if os.path.exists(args.sample_yaml):
+            other = {}
             y = yaml.safe_load(open(args.sample_yaml, "r"))
             for key in JSON_METADATA_VALUES:
+                # keep just the metadata we care about
                 try:
-                    data[key] = [y[key]]
+                    other[key] = y[key]
                 except KeyError:
                     print("'{}' metadata not available".format(key))
         else:
@@ -102,6 +104,7 @@ if not args.no_db_commit:
     # unlist the data, since the output of regionstat.R is a dict of lists of
     # length 1 and force keys to lower to correspond with the
     # postgres column indentifiers
+    data.update({JSON_OTHER_KEY: other})
     data = {k.lower(): v[0] if isinstance(v, list) else v for k, v in data.items()}
     if not bbc.check_bedfiles_table_exists():
         bbc.create_bedfiles_table(columns=BED_COLUMNS)
