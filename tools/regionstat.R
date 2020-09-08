@@ -142,10 +142,10 @@ doItAall <- function(query, fname, fileId, genome, cellMatrix) {
 		mean_absolute_TSS_dist=mean(abs(TSSdist), na.rm=TRUE),
 		mean_region_width=mean(widths),
 		md5sum=opt$digest,
-		plots=plots,
 		bedfile_path=fname
 	)
 	write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
+	write(jsonlite::toJSON(plots, pretty=TRUE), paste0(outfolder, "/", fileId, "_plots.json"))
 }
 
 # define values and output folder for doitall()

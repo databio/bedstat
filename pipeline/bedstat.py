@@ -9,6 +9,7 @@ __version__ = "0.0.2-dev"
 
 from argparse import ArgumentParser
 from hashlib import md5
+from psycopg2.extras import Json
 import json
 import yaml
 import os
@@ -56,6 +57,8 @@ fileid = os.path.splitext(os.path.splitext(bedfile_name)[0])[0]
 outfolder = os.path.abspath(os.path.join(
     bbc[CFG_PATH_KEY][CFG_BEDSTAT_OUTPUT_KEY], bed_digest))
 json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
+json_plots_file_path = os.path.abspath(os.path.join(outfolder,
+                                                    fileid + "_plots.json"))
 
 if not args.just_db_commit:
     pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder,
@@ -79,6 +82,8 @@ if not args.no_db_commit:
     data = {}
     with open(json_file_path, 'r', encoding='utf-8') as f:
         data = json.loads(f.read())
+    with open(json_plots_file_path, 'r', encoding='utf-8') as f_plots:
+        plots = json.loads(f_plots.read())
     if args.sample_yaml:
         # get the sample-specific metadata from the sample yaml representation
         if os.path.exists(args.sample_yaml):
@@ -106,6 +111,7 @@ if not args.no_db_commit:
     # postgres column indentifiers
     data.update({JSON_OTHER_KEY: other})
     data = {k.lower(): v[0] if isinstance(v, list) else v for k, v in data.items()}
+    data.update(dict(plots=Json(plots)))
     if not bbc.check_bedfiles_table_exists():
         bbc.create_bedfiles_table(columns=BED_COLUMNS)
     bbc.insert_bedfile_data(values=data)
