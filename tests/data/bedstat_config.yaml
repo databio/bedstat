@@ -1,0 +1,18 @@
+pep_version: 2.0.0
+sample_table: bedstat_annotation_sheet.csv
+
+looper:
+  output_dir: $BASE/outputs/bedstat_output
+
+sample_modifiers:
+  append:
+    bedbase_config: $BASE/tests/data/config_min.yaml
+    pipeline_interfaces: $BASE/pipeline_interface.yaml
+    output_file_path: OUTPUT
+    yaml_file: SAMPLE_YAML
+    open_signal_matrix: MATRIX
+  derive:
+    attributes: [output_file_path, yaml_file]
+    sources:
+      OUTPUT: "$BASE/tests/data/{file_name}"
+      SAMPLE_YAML: "$BASE/outputs/bedstat_output/submission/{sample_name}.yaml"

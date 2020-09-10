@@ -1,4 +1,0 @@
-metadata:
-    sample_annotation: ../lolacore.csv
-    output_dir: output
-    pipeline_interfaces: ../pipeline_interface.yaml
