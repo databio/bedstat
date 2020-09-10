@@ -12,6 +12,7 @@ jobs:
       matrix:
         python-version: [3.6, 3.7, 3.8]
         os: [ubuntu-latest] # can't use macOS when using service containers or container jobs
+        r: release
     runs-on: ${{ matrix.os }}
     services:
         postgres:
@@ -50,8 +51,14 @@ jobs:
     - name: Install R dependancies
       run: Rscript scripts/installRdeps.R
 
-    - name: run pipeline
+    - name: Run pipeline
       run: looper run -p local tests/data/bedstat_config.yaml
 
-    - name: test result
+    - name: Test plots exist
       run: |
+        if ls $GITHUB_WORKSPACE/outputs/bedstat_output/a6a08126cb6f4b1953ba0ec8675df85a/test_hg38*.png 1> /dev/null 2>&1; then
+          echo "SUCCESS";
+        else
+          echo "ERROR: files do not exist: $GITHUB_WORKSPACE/outputs/bedstat_output/a6a08126cb6f4b1953ba0ec8675df85a/test_hg38*.png";
+          exit 1
+        fi
