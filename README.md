@@ -35,27 +35,25 @@ The input PEP can be validated against the [JSON schema in this repository](pep_
 eido validate <path/to/pep> -s https://schema.databio.org/pipelines/bedstat.yaml
 ```
 
-### 2. Create a persistent volume to house PostgreSQL data
+### 2. Run PostgreSQL
+
+For example, to run an instance in a container and make the data persist, execute:
 
 ```
 docker volume create postgres-data
-```
-
-### 3. Run the Docker container for PostgreSQL database
-
-```
 docker run -d --name bedbase-postgres -p 5432:5432 -e POSTGRES_PASSWORD=bedbasepassword -e POSTGRES_USER=postgres -e POSTGRES_DB=postgres -v postgres-data:/var/lib/postgresql/data postgres
 ```
+Provided environment variables need to match the settings in bedbase configuration file
 
-### 4. Run the bedstat pipeline on the PEP
+### 3. Run the bedstat pipeline on the PEP
 
-Then simply run the looper command to run the pipeline for each bed file. It will create a set of plots and statistics per bed file and insert the metadata into Elastic:
+Then simply run the `looper run` command to run the pipeline for each bed file. It will create a set of plots and statistics per bed file and insert the metadata into PostgreSQL:
 
 ```
 looper run project/bedstat_config.yaml
 ```
 
-The data loaded into PostgreSQL should persist between PostgreSQL invocations, on the postgres-data docker volume created above in step 2.
+The data loaded into PostgreSQL should persist between PostgreSQL invocations, on the `postgres-data` docker volume created above in step 2.
 
 ## Additional dependencies
 
