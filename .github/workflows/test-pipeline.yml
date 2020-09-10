@@ -41,6 +41,4 @@ jobs:
       run: if [ -f requirements/requirements-test.txt ]; then pip install -r requirements/requirements-test.txt; fi
 
     - name: run pipeline
-      env:
-        BASE: $(pwd)
       run: looper run -p local tests/data/bedstat_config.yaml
