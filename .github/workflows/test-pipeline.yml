@@ -40,5 +40,11 @@ jobs:
     - name: Install test dependancies
       run: if [ -f requirements/requirements-test.txt ]; then pip install -r requirements/requirements-test.txt; fi
 
+    - name: Install R dependancies
+      run: Rscript scripts/installRdeps.R
+
     - name: run pipeline
       run: looper run -p local tests/data/bedstat_config.yaml
+
+    - name: test result
+      run: |
