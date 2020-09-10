@@ -1,3 +1,4 @@
+![Test bedstat pipeline](https://github.com/databio/bedstat/workflows/Test%20bedstat%20pipeline/badge.svg)
 # bedstat
 pipeline for obtaining statistics about bed files
 
