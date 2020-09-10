@@ -10,7 +10,6 @@ sample_modifiers:
     pipeline_interfaces: $GITHUB_WORKSPACE/pipeline_interface.yaml
     output_file_path: OUTPUT
     yaml_file: SAMPLE_YAML
-    open_signal_matrix: MATRIX
   derive:
     attributes: [output_file_path, yaml_file]
     sources:
