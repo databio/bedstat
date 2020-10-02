@@ -86,8 +86,8 @@ if not args.no_db_commit:
         plots = json.loads(f_plots.read())
     if args.sample_yaml:
         # get the sample-specific metadata from the sample yaml representation
+        other = {}
         if os.path.exists(args.sample_yaml):
-            other = {}
             y = yaml.safe_load(open(args.sample_yaml, "r"))
             for key in JSON_METADATA_VALUES:
                 # keep just the metadata we care about
