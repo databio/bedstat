@@ -1,6 +1,9 @@
 pipeline_name: BEDSTAT
 pipeline_type: sample
 path: pipeline/bedstat.py
+pre_submit:
+  python_functions:
+    - looper.write_sample_yaml
 input_schema: http://schema.databio.org/pipelines/bedstat.yaml
 command_template: >
   {pipeline.path}
