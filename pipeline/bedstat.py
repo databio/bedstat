@@ -59,6 +59,8 @@ outfolder = os.path.abspath(os.path.join(
 json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
 json_plots_file_path = os.path.abspath(os.path.join(outfolder,
                                                     fileid + "_plots.json"))
+bed_relpath = os.path.relpath(
+    args.bedfile, os.path.abspath(bbc[CFG_PATH_KEY][CFG_BEDSTAT_OUTPUT_KEY]))
 
 if not args.just_db_commit:
     pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder,
@@ -66,13 +68,12 @@ if not args.just_db_commit:
     rscript_path = os.path.join(os.path.dirname(
         os.path.dirname(os.path.abspath(__file__))), "tools", "regionstat.R")
     assert os.path.exists(rscript_path), \
-        FileNotFoundError("'{}' script not found".format(rscript_path))
-    cmd_vars = dict(rscript=rscript_path, bed=args.bedfile, id=fileid,
-                    matrix=args.open_signal_matrix, out=outfolder,
-                    genome=args.genome_assembly, digest=bed_digest)
-    command = "Rscript {rscript} --bedfile={bed} --fileId={id} " \
-              "--openSignalMatrix={matrix} --outputfolder={out} " \
-              "--genome={genome} --digest={digest}".format(**cmd_vars)
+        FileNotFoundError(f"'{rscript_path}' script not found")
+    command = \
+        f"Rscript {rscript_path} --bedfilePath={args.bedfile} " \
+        f"--fileId={fileid} --openSignalMatrix={args.open_signal_matrix} " \
+        f"--outputFolder={outfolder} --genome={args.genome_assembly} " \
+        f"--digest={bed_digest} --bedfileRelpath={bed_relpath}"
     pm.run(cmd=command, target=json_file_path)
     pm.stop_pipeline()
 
@@ -94,18 +95,11 @@ if not args.no_db_commit:
                 try:
                     other[key] = y[key]
                 except KeyError:
-                    print("'{}' metadata not available".format(key))
+                    print(f"'{key}' metadata not available")
         else:
-            warnings.warn("Specified sample_yaml path does not exist: {}".
-                          format(args.sample_yaml))
+            warnings.warn(
+                f"Specified sample_yaml path does not exist: {args.sample_yaml}")
     # enrich the data from R with the data from the sample line itself
-    # the bedfile_path below needs to be overwritten in Elastic in case the
-    # pipeline run was split into two computing environments. Currently used
-    # for the development. This concept leverages the potability introduced by
-    # environment variable in the bedfile path in the PEP. Locally the
-    # environment variable points to a different path than on the compute
-    # cluster where the heavy calculations happen.
-    data[BEDFILE_PATH_KEY] = [args.bedfile]
     # unlist the data, since the output of regionstat.R is a dict of lists of
     # length 1 and force keys to lower to correspond with the
     # postgres column indentifiers
