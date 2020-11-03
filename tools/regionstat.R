@@ -5,15 +5,18 @@ library(tools)
 data(TSS_hg38)
 
 option_list = list(
-    make_option(c("--bedfile"), type="character", default=NULL, 
-              help="path to a BED file to process", metavar="character"),
+    make_option(c("--bedfilePath"), type="character", default=NULL, 
+              help="full path to a BED file to process", metavar="character"),
+    make_option(c("--bedfileRelpath"), type="character", default=NULL, 
+                help="relatie path to a BED file to save in the JSON file", 
+                metavar="character"),
 	make_option(c("--fileId"), type="character", default=NULL,
               help="BED file ID to use for output files prefix", metavar="character"),
 	make_option(c("--openSignalMatrix"), type="character",
 			  help="path to the open signal matrix required for the tissue specificity plot", metavar="character"),
     make_option(c("--digest"), type="character", default=NULL,
               help="digest of the BED file", metavar="character"),
-    make_option(c("--outputfolder"), type="character", default="output",
+    make_option(c("--outputFolder"), type="character", default="output",
               help="base output folder for results", metavar="character"),
     make_option(c("--genome"), type="character", default="hg38",
               help="genome reference to calculate against", metavar="character"))
@@ -21,9 +24,14 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);    
 
-if (is.null(opt$bedfile)) {
+if (is.null(opt$bedfilePath)) {
     print_help(opt_parser)
     stop("Bed file input missing.")
+}
+
+if (is.null(opt$bedfileRelpath)) {
+    print_help(opt_parser)
+    stop("Bed file relative path input missing.")
 }
 
 if (is.null(opt$fileId)) {
@@ -43,7 +51,7 @@ plotBoth <- function(plotPth, g){
     ggplot2::ggsave(paste0(plotPth, ".pdf"), g, device="pdf", width=8, height=8, units="in")
 }
 
-doItAall <- function(query, fname, fileId, genome, cellMatrix) {
+doItAall <- function(query, bedRelpath, fileId, genome, cellMatrix) {
     plots = data.frame(stringsAsFactors=F)
     bsGenomeAvail = ifelse((requireNamespace(BSg, quietly=TRUE) | requireNamespace(BSgm, quietly=TRUE)), TRUE, FALSE)
     ## continue on with calculations
@@ -142,7 +150,7 @@ doItAall <- function(query, fname, fileId, genome, cellMatrix) {
 		mean_absolute_TSS_dist=mean(abs(TSSdist), na.rm=TRUE),
 		mean_region_width=mean(widths),
 		md5sum=opt$digest,
-		bedfile_path=fname
+		bedfile_path=bedRelpath
 	)
 	write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
 	write(jsonlite::toJSON(plots, pretty=TRUE), paste0(outfolder, "/", fileId, "_plots.json"))
@@ -150,8 +158,9 @@ doItAall <- function(query, fname, fileId, genome, cellMatrix) {
 
 # define values and output folder for doitall()
 fileId = opt$fileId
-fn = opt$bedfile
-outfolder = opt$outputfolder
+bedPath = opt$bedfilePath
+bedRelpath = opt$bedfileRelpath
+outfolder = opt$outputFolder
 genome = opt$genome
 cellMatrix = opt$openSignalMatrix
 orgName = "Mmusculus"
@@ -163,7 +172,7 @@ BSg = paste0("BSgenome.", orgName , ".UCSC.", genome)
 BSgm = paste0(BSg, ".masked")
 
 # read bed file and run doitall()
-query = LOLA::readBed(fn)
-doItAall(query, fn, fileId, genome, cellMatrix)
+query = LOLA::readBed(bedPath)
+doItAall(query, bedRelpath, fileId, genome, cellMatrix)
 
 
