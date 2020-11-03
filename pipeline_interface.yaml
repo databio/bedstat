@@ -7,7 +7,7 @@ pre_submit:
   python_functions:
     - looper.write_sample_yaml
 command_template: >
-  {pipeline.path}
+  {pipeline.var_templates.path}
   --bedfile {sample.output_file_path}
   --genome {sample.genome}
   --sample-yaml {sample.yaml_file}
