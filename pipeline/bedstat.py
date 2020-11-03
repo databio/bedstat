@@ -54,13 +54,12 @@ bed_digest = md5(open(args.bedfile, 'rb').read()).hexdigest()
 bedfile_name = os.path.split(args.bedfile)[1]
 # need to split twice since there are 2 exts
 fileid = os.path.splitext(os.path.splitext(bedfile_name)[0])[0]
-outfolder = os.path.abspath(os.path.join(
-    bbc[CFG_PATH_KEY][CFG_BEDSTAT_OUTPUT_KEY], bed_digest))
+outfolder = os.path.abspath(os.path.join(bbc.get_bedstat_output_path(), bed_digest))
 json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
 json_plots_file_path = os.path.abspath(os.path.join(outfolder,
                                                     fileid + "_plots.json"))
 bed_relpath = os.path.relpath(
-    args.bedfile, os.path.abspath(bbc[CFG_PATH_KEY][CFG_BEDSTAT_OUTPUT_KEY]))
+    args.bedfile, os.path.abspath(bbc.get_bedstat_output_path()))
 
 if not args.just_db_commit:
     pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder,
