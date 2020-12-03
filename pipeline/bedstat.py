@@ -9,13 +9,13 @@ __version__ = "0.0.2-dev"
 
 from argparse import ArgumentParser
 from hashlib import md5
-from psycopg2.extras import Json
 import json
 import yaml
 import os
 import warnings
 
 from bbconf.const import *
+from bbconf.bbconf_new import BedBaseConf
 import pypiper
 import bbconf
 
@@ -48,18 +48,19 @@ parser = pypiper.add_pypiper_args(parser,
 
 args = parser.parse_args()
 
-bbc = bbconf.BedBaseConf(filepath=bbconf.get_bedbase_cfg(args.bedbase_config))
+bbc = BedBaseConf(config_path=args.bedbase_config)
+bedstat_output_path = bbc.get_bedstat_output_path()
 
 bed_digest = md5(open(args.bedfile, 'rb').read()).hexdigest()
 bedfile_name = os.path.split(args.bedfile)[1]
 # need to split twice since there are 2 exts
 fileid = os.path.splitext(os.path.splitext(bedfile_name)[0])[0]
-outfolder = os.path.abspath(os.path.join(bbc.get_bedstat_output_path(), bed_digest))
+outfolder = os.path.abspath(os.path.join(bedstat_output_path, bed_digest))
 json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
-json_plots_file_path = os.path.abspath(os.path.join(outfolder,
-                                                    fileid + "_plots.json"))
+json_plots_file_path = os.path.abspath(
+    os.path.join(outfolder, fileid + "_plots.json"))
 bed_relpath = os.path.relpath(
-    args.bedfile, os.path.abspath(bbc.get_bedstat_output_path()))
+    args.bedfile, os.path.abspath(bedstat_output_path))
 
 if not args.just_db_commit:
     pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder,
@@ -104,7 +105,10 @@ if not args.no_db_commit:
     # postgres column indentifiers
     data.update({JSON_OTHER_KEY: other})
     data = {k.lower(): v[0] if isinstance(v, list) else v for k, v in data.items()}
-    data.update(dict(plots=Json(plots)))
-    if not bbc.check_bedfiles_table_exists():
-        bbc.create_bedfiles_table(columns=BED_COLUMNS)
-    bbc.insert_bedfile_data(values=data)
+    print(f"plots: {plots}")
+    for plot in plots:
+        plot_id = plot["name"]
+        del plot["name"]
+        data.update({plot_id: plot})
+    print(f"data: {data}")
+    bbc.bed.report(record_identifier=bed_digest, values=data)
