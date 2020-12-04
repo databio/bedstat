@@ -99,16 +99,14 @@ if not args.no_db_commit:
         else:
             warnings.warn(
                 f"Specified sample_yaml path does not exist: {args.sample_yaml}")
-    # enrich the data from R with the data from the sample line itself
+    # enrich the data from R with the data from the sample file
     # unlist the data, since the output of regionstat.R is a dict of lists of
     # length 1 and force keys to lower to correspond with the
     # postgres column indentifiers
     data.update({JSON_OTHER_KEY: other})
     data = {k.lower(): v[0] if isinstance(v, list) else v for k, v in data.items()}
-    print(f"plots: {plots}")
     for plot in plots:
         plot_id = plot["name"]
         del plot["name"]
         data.update({plot_id: plot})
-    print(f"data: {data}")
     bbc.bed.report(record_identifier=bed_digest, values=data)

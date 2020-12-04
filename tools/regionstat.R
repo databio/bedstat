@@ -80,7 +80,7 @@ doItAall <- function(query, bedRelpath, fileId, genome, cellMatrix) {
 	if (bsGenomeAvail) {
 		gcvec = calcGCContentRef(query, genome)
 		plotBoth("gccontent", plotGCContent(gcvec))
-		plots = rbind(plots, getPlotReportDF("gccontent", "Regions distribution over chromosomes"))
+		plots = rbind(plots, getPlotReportDF("gccontent", "GC content"))
 	}
     
     # Partition plots, default to percentages
@@ -103,12 +103,12 @@ doItAall <- function(query, bedRelpath, fileId, genome, cellMatrix) {
     
 	# Cumulative partition plots
 	plotBoth("cumulative_partitions", plotCumulativePartitions(calcCumulativePartitionsRef(query, genome)))
-	plots = rbind(plots, getPlotReportDF("cumulative_partitions", "Expected distribution over genomic partitions"))
+	plots = rbind(plots, getPlotReportDF("cumulative_partitions", "Cumulative distribution over genomic partitions"))
 	
 	# QThist plot
 	widths = calcWidth(query)
 	plotBoth("widths_histogram", plotQTHist(widths))
-	plots = rbind(plots, getPlotReportDF("widths_histogram", "Quantile-Trimmed Histogram of Widths"))
+	plots = rbind(plots, getPlotReportDF("widths_histogram", "Quantile-trimmed histogram of widths"))
 
 	# Neighbor regions distance plots
 	plotBoth("neighbor_distances", plotNeighborDist(calcNeighborDist(query)))
@@ -118,7 +118,7 @@ doItAall <- function(query, bedRelpath, fileId, genome, cellMatrix) {
 	if (cellMatrix == "None") {
 		message("open signal matrix not provided. Skipping tissue specificity plot ... ")
 	} else {
-		plotBoth("neighbor_distances", plotOpenSignal(calcOpenSignal(query, data.table::fread(cellMatrix))))
+		plotBoth("open_chromatin", plotOpenSignal(calcOpenSignal(query, data.table::fread(cellMatrix))))
 		plots = rbind(plots, getPlotReportDF("open_chromatin", "Cell specific enrichment for open chromatin"))
 	}
 
