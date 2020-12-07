@@ -48,7 +48,7 @@ jobs:
       with:
         r-version: ${{ matrix.r }}
 
-    - name: Install R dependancies
+    - name: Install R dependancies`
       run: Rscript scripts/installRdeps.R
 
     - name: Run pipeline
@@ -65,4 +65,4 @@ jobs:
 
     - name: Test record in PostgreSQL
       run: |
-        echo "from bbconf.bbconf_new import BedBaseConf; from bbconf.const import *; bbc = BedBaseConf('$GITHUB_WORKSPACE/tests/data/config_min.yaml'); assert len(bbc.bed.select(columns='id')) == 1, 'Number of records in the bedfiles table not equal 1'" | python3 -
+        echo "from bbconf.bbconf_new import BedBaseConf; from bbconf.const import *; bbc = BedBaseConf('$GITHUB_WORKSPACE/tests/data/config_min.yaml'); assert bbc.bed.record_count == 1, 'Number of records in the bedfiles table not equal 1'" | python3 -
