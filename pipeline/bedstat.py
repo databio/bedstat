@@ -14,8 +14,6 @@ import yaml
 import os
 import warnings
 
-from bbconf.const import *
-from bbconf.bbconf_new import BedBaseConf
 import pypiper
 import bbconf
 
@@ -48,7 +46,7 @@ parser = pypiper.add_pypiper_args(parser,
 
 args = parser.parse_args()
 
-bbc = BedBaseConf(config_path=args.bedbase_config)
+bbc = bbconf.BedBaseConf(config_path=args.bedbase_config, database_only=True)
 bedstat_output_path = bbc.get_bedstat_output_path()
 
 bed_digest = md5(open(args.bedfile, 'rb').read()).hexdigest()
@@ -90,20 +88,10 @@ if not args.no_db_commit:
         other = {}
         if os.path.exists(args.sample_yaml):
             y = yaml.safe_load(open(args.sample_yaml, "r"))
-            for key in JSON_METADATA_VALUES:
-                # keep just the metadata we care about
-                try:
-                    other[key] = y[key]
-                except KeyError:
-                    print(f"'{key}' metadata not available")
-        else:
-            warnings.warn(
-                f"Specified sample_yaml path does not exist: {args.sample_yaml}")
-    # enrich the data from R with the data from the sample file
+            data.update({"other": y})
     # unlist the data, since the output of regionstat.R is a dict of lists of
     # length 1 and force keys to lower to correspond with the
-    # postgres column indentifiers
-    data.update({JSON_OTHER_KEY: other})
+    # postgres column identifiers
     data = {k.lower(): v[0] if isinstance(v, list) else v for k, v in data.items()}
     for plot in plots:
         plot_id = plot["name"]
