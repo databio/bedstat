@@ -58,7 +58,7 @@ json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
 json_plots_file_path = os.path.abspath(
     os.path.join(outfolder, fileid + "_plots.json"))
 bed_relpath = os.path.relpath(
-    args.bedfile, os.path.abspath(bedstat_output_path))
+    args.bedfile, os.path.join(os.path.abspath(bedstat_output_path), bed_digest))
 
 if not args.just_db_commit:
     pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder,
@@ -71,7 +71,7 @@ if not args.just_db_commit:
         f"Rscript {rscript_path} --bedfilePath={args.bedfile} " \
         f"--fileId={fileid} --openSignalMatrix={args.open_signal_matrix} " \
         f"--outputFolder={outfolder} --genome={args.genome_assembly} " \
-        f"--digest={bed_digest} --bedfileRelpath={bed_relpath}"
+        f"--digest={bed_digest}"
     pm.run(cmd=command, target=json_file_path)
     pm.stop_pipeline()
 
@@ -93,6 +93,7 @@ if not args.no_db_commit:
     # length 1 and force keys to lower to correspond with the
     # postgres column identifiers
     data = {k.lower(): v[0] if isinstance(v, list) else v for k, v in data.items()}
+    data.update({"bedfile": {"path": bed_relpath, "title": "Path to the BED file"}})
     for plot in plots:
         plot_id = plot["name"]
         del plot["name"]

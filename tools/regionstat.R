@@ -7,9 +7,6 @@ data(TSS_hg38)
 option_list = list(
     make_option(c("--bedfilePath"), type="character", default=NULL, 
               help="full path to a BED file to process", metavar="character"),
-    make_option(c("--bedfileRelpath"), type="character", default=NULL, 
-                help="relatie path to a BED file to save in the JSON file", 
-                metavar="character"),
 	make_option(c("--fileId"), type="character", default=NULL,
               help="BED file ID to use for output files prefix", metavar="character"),
 	make_option(c("--openSignalMatrix"), type="character",
@@ -27,11 +24,6 @@ opt = parse_args(opt_parser);
 if (is.null(opt$bedfilePath)) {
     print_help(opt_parser)
     stop("Bed file input missing.")
-}
-
-if (is.null(opt$bedfileRelpath)) {
-    print_help(opt_parser)
-    stop("Bed file relative path input missing.")
 }
 
 if (is.null(opt$fileId)) {
@@ -64,7 +56,7 @@ getPlotReportDF <- function(plotId, title){
 }
 
 
-doItAall <- function(query, bedRelpath, fileId, genome, cellMatrix) {
+doItAall <- function(query, fileId, genome, cellMatrix) {
     plots = data.frame(stringsAsFactors=F)
     bsGenomeAvail = ifelse((requireNamespace(BSg, quietly=TRUE) | requireNamespace(BSgm, quietly=TRUE)), TRUE, FALSE)
     # TSS distance plot
@@ -129,8 +121,7 @@ doItAall <- function(query, bedRelpath, fileId, genome, cellMatrix) {
 		regions_no=length(query),
 		mean_absolute_TSS_dist=mean(abs(TSSdist), na.rm=TRUE),
 		mean_region_width=mean(widths),
-		md5sum=opt$digest,
-		bedfile_path=bedRelpath
+		md5sum=opt$digest
 	)
 	write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
 	write(jsonlite::toJSON(plots, pretty=TRUE), paste0(outfolder, "/", fileId, "_plots.json"))
@@ -139,7 +130,6 @@ doItAall <- function(query, bedRelpath, fileId, genome, cellMatrix) {
 # define values and output folder for doitall()
 fileId = opt$fileId
 bedPath = opt$bedfilePath
-bedRelpath = opt$bedfileRelpath
 outfolder = opt$outputFolder
 genome = opt$genome
 cellMatrix = opt$openSignalMatrix
@@ -153,6 +143,6 @@ BSgm = paste0(BSg, ".masked")
 
 # read bed file and run doitall()
 query = LOLA::readBed(bedPath)
-doItAall(query, bedRelpath, fileId, genome, cellMatrix)
+doItAall(query, fileId, genome, cellMatrix)
 
 
