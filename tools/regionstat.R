@@ -58,7 +58,7 @@ getPlotReportDF <- function(plotId, title){
         "name"=plotId, 
         "title"=title, 
         "thumbnail_path"=paste0(pth, ".png"), 
-        "path"=paste0(pth, ".png")
+        "path"=paste0(pth, ".pdf")
     )
     return(newPlot)
 }
