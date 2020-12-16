@@ -13,3 +13,4 @@ command_template: >
   --sample-yaml {sample.yaml_file}
   {% if sample.bedbase_config is defined %} --bedbase-config {sample.bedbase_config} {% endif %}
   {% if sample.open_signal_matrix is defined %} --open-signal-matrix {sample.open_signal_matrix} {% endif %}
+  {% if sample.chrom_size is defined %} --chrom-size {sample.chrom_size} {% endif %}
