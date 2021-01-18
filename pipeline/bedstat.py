@@ -63,9 +63,10 @@ json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
 json_plots_file_path = os.path.abspath(
     os.path.join(outfolder, fileid + "_plots.json"))
 bed_relpath = os.path.relpath(
-    args.bedfile, os.path.join(os.path.abspath(bedstat_output_path), bed_digest))
+    args.bedfile, os.path.abspath(os.path.join( bedstat_output_path, "..","..")))
 bigbed_relpath = os.path.relpath(
-    os.path.join(args.bigbed, fileid + ".bigBed"), os.path.join(os.path.abspath(bedstat_output_path), bed_digest))
+    os.path.join(args.bigbed, fileid + ".bigBed"), os.path.abspath(os.path.join(bedstat_output_path, "..","..")))
+
     
 if not args.just_db_commit:
     pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder,
