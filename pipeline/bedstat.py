@@ -9,10 +9,12 @@ __version__ = "0.0.2-dev"
 
 from argparse import ArgumentParser
 from hashlib import md5
+import pandas as pd
 import json
 import yaml
 import os
 import warnings
+import tempfile
 
 import pypiper
 import bbconf
@@ -27,6 +29,9 @@ parser.add_argument(
     '--open-signal-matrix', type=str, required=False, default=None,
     help='a full path to the openSignalMatrix required for the tissue '
          'specificity plots')
+parser.add_argument(
+    '--bigbed', type=str, required=False, default=None,
+    help='a full path to the bigbed files')
 parser.add_argument(
     "--bedbase-config", dest="bedbase_config", type=str, default=None,
     help="a path to the bedbase configuratiion file")
@@ -58,11 +63,16 @@ json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
 json_plots_file_path = os.path.abspath(
     os.path.join(outfolder, fileid + "_plots.json"))
 bed_relpath = os.path.relpath(
-    args.bedfile, os.path.join(os.path.abspath(bedstat_output_path), bed_digest))
+    args.bedfile, os.path.abspath(os.path.join( bedstat_output_path, "..","..")))
+bigbed_relpath = os.path.relpath(
+    os.path.join(args.bigbed, fileid + ".bigBed"), os.path.abspath(os.path.join(bedstat_output_path, "..","..")))
 
+    
 if not args.just_db_commit:
     pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder,
                                  args=args)
+
+    # run Rscript
     rscript_path = os.path.join(os.path.dirname(
         os.path.dirname(os.path.abspath(__file__))), "tools", "regionstat.R")
     assert os.path.exists(rscript_path), \
@@ -72,6 +82,7 @@ if not args.just_db_commit:
         f"--fileId={fileid} --openSignalMatrix={args.open_signal_matrix} " \
         f"--outputFolder={outfolder} --genome={args.genome_assembly} " \
         f"--digest={bed_digest}"
+    print (command)
     pm.run(cmd=command, target=json_file_path)
     pm.stop_pipeline()
 
@@ -94,6 +105,7 @@ if not args.no_db_commit:
     # postgres column identifiers
     data = {k.lower(): v[0] if isinstance(v, list) else v for k, v in data.items()}
     data.update({"bedfile": {"path": bed_relpath, "title": "Path to the BED file"}})
+    data.update({"bigbedfile": {"path": bigbed_relpath, "title": "Path to the big BED file"}})
     for plot in plots:
         plot_id = plot["name"]
         del plot["name"]
