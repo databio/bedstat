@@ -21,68 +21,98 @@ import bbconf
 
 parser = ArgumentParser(
     description="A pipeline to read a file in BED format and produce metadata "
-                "in JSON format.")
+    "in JSON format."
+)
 
 parser.add_argument(
-    '--bedfile', help='a full path to bed file to process', required=True)
+    "--bedfile", help="a full path to bed file to process", required=True
+)
 parser.add_argument(
-    '--open-signal-matrix', type=str, required=False, default=None,
-    help='a full path to the openSignalMatrix required for the tissue '
-         'specificity plots')
+    "--open-signal-matrix",
+    type=str,
+    required=False,
+    default=None,
+    help="a full path to the openSignalMatrix required for the tissue "
+    "specificity plots",
+)
 parser.add_argument(
-    '--bigbed', type=str, required=False, default=None,
-    help='a full path to the bigbed files')
+    "--bigbed",
+    type=str,
+    required=False,
+    default=None,
+    help="a full path to the bigbed files",
+)
 parser.add_argument(
-    "--bedbase-config", dest="bedbase_config", type=str, default=None,
-    help="a path to the bedbase configuratiion file")
+    "--bedbase-config",
+    dest="bedbase_config",
+    type=str,
+    default=None,
+    help="a path to the bedbase configuratiion file",
+)
 parser.add_argument(
-    "-y", "--sample-yaml", dest="sample_yaml", type=str, required=False,
+    "-y",
+    "--sample-yaml",
+    dest="sample_yaml",
+    type=str,
+    required=False,
     help="a yaml config file with sample attributes to pass on more metadata "
-         "into the database")
+    "into the database",
+)
 exclusive_group = parser.add_mutually_exclusive_group()
 exclusive_group.add_argument(
-    '--no-db-commit', action='store_true',
-    help='whether the JSON commit to the database should be skipped')
+    "--no-db-commit",
+    action="store_true",
+    help="whether the JSON commit to the database should be skipped",
+)
 exclusive_group.add_argument(
-    '--just-db-commit', action='store_true',
-    help='whether just to commit the JSON to the database')
-parser = pypiper.add_pypiper_args(parser,
-                                  groups=["pypiper", "common", "looper", "ngs"])
+    "--just-db-commit",
+    action="store_true",
+    help="whether just to commit the JSON to the database",
+)
+parser = pypiper.add_pypiper_args(parser, groups=["pypiper", "common", "looper", "ngs"])
 
 args = parser.parse_args()
 
 bbc = bbconf.BedBaseConf(config_path=args.bedbase_config, database_only=True)
 bedstat_output_path = bbc.get_bedstat_output_path()
 
-bed_digest = md5(open(args.bedfile, 'rb').read()).hexdigest()
+bed_digest = md5(open(args.bedfile, "rb").read()).hexdigest()
 bedfile_name = os.path.split(args.bedfile)[1]
 # need to split twice since there are 2 exts
 fileid = os.path.splitext(os.path.splitext(bedfile_name)[0])[0]
 outfolder = os.path.abspath(os.path.join(bedstat_output_path, bed_digest))
 json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
-json_plots_file_path = os.path.abspath(
-    os.path.join(outfolder, fileid + "_plots.json"))
+json_plots_file_path = os.path.abspath(os.path.join(outfolder, fileid + "_plots.json"))
 bed_relpath = os.path.relpath(
-    args.bedfile, os.path.abspath(os.path.join( bedstat_output_path, "..","..")))
+    args.bedfile, os.path.abspath(os.path.join(bedstat_output_path, "..", ".."))
+)
 bigbed_relpath = os.path.relpath(
-    os.path.join(args.bigbed, fileid + ".bigBed"), os.path.abspath(os.path.join(bedstat_output_path, "..","..")))
+    os.path.join(args.bigbed, fileid + ".bigBed"),
+    os.path.abspath(os.path.join(bedstat_output_path, "..", "..")),
+)
 
-    
+
 if not args.just_db_commit:
-    pm = pypiper.PipelineManager(name="bedstat-pipeline", outfolder=outfolder,
-                                 args=args)
+    pm = pypiper.PipelineManager(
+        name="bedstat-pipeline", outfolder=outfolder, args=args
+    )
 
     # run Rscript
-    rscript_path = os.path.join(os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__))), "tools", "regionstat.R")
-    assert os.path.exists(rscript_path), \
-        FileNotFoundError(f"'{rscript_path}' script not found")
-    command = \
-        f"Rscript {rscript_path} --bedfilePath={args.bedfile} " \
-        f"--fileId={fileid} --openSignalMatrix={args.open_signal_matrix} " \
-        f"--outputFolder={outfolder} --genome={args.genome_assembly} " \
+    rscript_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "tools",
+        "regionstat.R",
+    )
+    assert os.path.exists(rscript_path), FileNotFoundError(
+        f"'{rscript_path}' script not found"
+    )
+    command = (
+        f"Rscript {rscript_path} --bedfilePath={args.bedfile} "
+        f"--fileId={fileid} --openSignalMatrix={args.open_signal_matrix} "
+        f"--outputFolder={outfolder} --genome={args.genome_assembly} "
         f"--digest={bed_digest}"
-    print (command)
+    )
+    print(command)
     pm.run(cmd=command, target=json_file_path)
     pm.stop_pipeline()
 
@@ -90,9 +120,9 @@ if not args.just_db_commit:
 # if the file exists, of course
 if not args.no_db_commit:
     data = {}
-    with open(json_file_path, 'r', encoding='utf-8') as f:
+    with open(json_file_path, "r", encoding="utf-8") as f:
         data = json.loads(f.read())
-    with open(json_plots_file_path, 'r', encoding='utf-8') as f_plots:
+    with open(json_plots_file_path, "r", encoding="utf-8") as f_plots:
         plots = json.loads(f_plots.read())
     if args.sample_yaml:
         # get the sample-specific metadata from the sample yaml representation
@@ -105,7 +135,9 @@ if not args.no_db_commit:
     # postgres column identifiers
     data = {k.lower(): v[0] if isinstance(v, list) else v for k, v in data.items()}
     data.update({"bedfile": {"path": bed_relpath, "title": "Path to the BED file"}})
-    data.update({"bigbedfile": {"path": bigbed_relpath, "title": "Path to the big BED file"}})
+    data.update(
+        {"bigbedfile": {"path": bigbed_relpath, "title": "Path to the big BED file"}}
+    )
     for plot in plots:
         plot_id = plot["name"]
         del plot["name"]
