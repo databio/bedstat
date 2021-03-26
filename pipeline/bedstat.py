@@ -135,9 +135,16 @@ if not args.no_db_commit:
     # postgres column identifiers
     data = {k.lower(): v[0] if isinstance(v, list) else v for k, v in data.items()}
     data.update({"bedfile": {"path": bed_relpath, "title": "Path to the BED file"}})
-    data.update(
-        {"bigbedfile": {"path": bigbed_relpath, "title": "Path to the big BED file"}}
-    )
+    
+    if os.path.exists(
+        os.path.join(args.bigbed, fileid + ".bigBed")
+        ) and not os.path.islink(
+            os.path.join(args.bigbed, fileid + ".bigBed")
+        ):
+        data.update(
+            {"bigbedfile": {"path": bigbed_relpath, "title": "Path to the big BED file"}}
+        )
+
     for plot in plots:
         plot_id = plot["name"]
         del plot["name"]
