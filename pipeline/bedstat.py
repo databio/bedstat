@@ -15,6 +15,7 @@ import yaml
 import os
 import warnings
 import tempfile
+import requests
 
 import pypiper
 import bbconf
@@ -141,6 +142,10 @@ if not args.no_db_commit:
         ) and not os.path.islink(
             os.path.join(args.bigbed, fileid + ".bigBed")
         ):
+        digest = requset.get(f"http://refgenomes.databio.org/genomes/genome_digest/{args.genome_assembly}")
+        data.update(
+            {"genome": {args.genome_assembly: digest}}
+        )
         data.update(
             {"bigbedfile": {"path": bigbed_relpath, "title": "Path to the big BED file"}}
         )
