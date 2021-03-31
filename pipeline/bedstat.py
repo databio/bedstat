@@ -144,12 +144,19 @@ if not args.no_db_commit:
             f"http://refgenomes.databio.org/genomes/genome_digest/{args.genome_assembly}"
         ).text
 
-        data.update({"genome": {args.genome_assembly: digest}})
+        data.update(
+            {
+                "genome": {
+                    "alias": args.genome_assembly,
+                    "digest": digest,
+                }
+            }
+        )
         data.update(
             {
                 "bigbedfile": {
                     "path": bigbed_relpath, 
-                    "title": "Path to the big BED file"
+                    "title": "Path to the big BED file",
                 }
             }
         )
