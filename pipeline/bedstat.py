@@ -142,7 +142,7 @@ if not args.no_db_commit:
         ) and not os.path.islink(os.path.join(args.bigbed, fileid + ".bigBed")):
         digest = requests.get(
             f"http://refgenomes.databio.org/genomes/genome_digest/{args.genome_assembly}"
-        ).text
+        ).text.strip('""')
 
         data.update(
             {
