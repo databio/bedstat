@@ -9,7 +9,6 @@ __version__ = "0.0.3-dev"
 
 from argparse import ArgumentParser
 from hashlib import md5
-import pandas as pd
 import json
 import yaml
 import os
@@ -87,7 +86,8 @@ outfolder = os.path.abspath(os.path.join(bedstat_output_path, bed_digest))
 json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
 json_plots_file_path = os.path.abspath(os.path.join(outfolder, fileid + "_plots.json"))
 bed_relpath = os.path.relpath(
-    args.bedfile, os.path.abspath(os.path.join(bedstat_output_path, os.pardir, os.pardir))
+    args.bedfile,
+    os.path.abspath(os.path.join(bedstat_output_path, os.pardir, os.pardir)),
 )
 bigbed_relpath = os.path.relpath(
     os.path.join(args.bigbed, fileid + ".bigBed"),
@@ -96,21 +96,21 @@ bigbed_relpath = os.path.relpath(
 
 
 def convert_unit(size_in_bytes):
-    """ Convert the size from bytes to other units like KB, MB or GB"""
+    """Convert the size from bytes to other units like KB, MB or GB"""
     if size_in_bytes < 1024:
         return str(size_in_bytes) + "bytes"
-    elif size_in_bytes in range(1024, 1024*1024):
-        return str(round(size_in_bytes/1024, 2)) + "KB"
-    elif size_in_bytes in range(1024*1024, 1024*1024*1024):
-        return str(round(size_in_bytes/(1024*1024))) + "MB"
-    elif size_in_bytes >= 1024*1024*1024:
-        return str(round(size_in_bytes/(1024*1024*1024))) + "GB"
+    elif size_in_bytes in range(1024, 1024 * 1024):
+        return str(round(size_in_bytes / 1024, 2)) + "KB"
+    elif size_in_bytes in range(1024 * 1024, 1024 * 1024 * 1024):
+        return str(round(size_in_bytes / (1024 * 1024))) + "MB"
+    elif size_in_bytes >= 1024 * 1024 * 1024:
+        return str(round(size_in_bytes / (1024 * 1024 * 1024))) + "GB"
 
 
 def get_file_size(file_name):
-   """ Get file in size in given unit like KB, MB or GB"""
-   size = os.path.getsize(file_name)
-   return convert_unit(size)
+    """Get file in size in given unit like KB, MB or GB"""
+    size = os.path.getsize(file_name)
+    return convert_unit(size)
 
 
 def main():
@@ -156,11 +156,19 @@ def main():
         # length 1 and force keys to lower to correspond with the
         # postgres column identifiers
         data = {k.lower(): v[0] if isinstance(v, list) else v for k, v in data.items()}
-        data.update({"bedfile": {"path": bed_relpath, "size": get_file_size(args.bedfile), "title": "Path to the BED file"}})
-        
+        data.update(
+            {
+                "bedfile": {
+                    "path": bed_relpath,
+                    "size": get_file_size(args.bedfile),
+                    "title": "Path to the BED file",
+                }
+            }
+        )
+
         if os.path.exists(
             os.path.join(args.bigbed, fileid + ".bigBed")
-            ) and not os.path.islink(os.path.join(args.bigbed, fileid + ".bigBed")):
+        ) and not os.path.islink(os.path.join(args.bigbed, fileid + ".bigBed")):
             digest = requests.get(
                 f"http://refgenomes.databio.org/genomes/genome_digest/{args.genome_assembly}"
             ).text.strip('""')
@@ -176,8 +184,10 @@ def main():
             data.update(
                 {
                     "bigbedfile": {
-                        "path": bigbed_relpath, 
-                        "size": get_file_size(os.path.join(args.bigbed, fileid + ".bigBed")),
+                        "path": bigbed_relpath,
+                        "size": get_file_size(
+                            os.path.join(args.bigbed, fileid + ".bigBed")
+                        ),
                         "title": "Path to the big BED file",
                     }
                 }
