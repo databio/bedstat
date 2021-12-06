@@ -193,6 +193,16 @@ def main():
                 }
             )
 
+        else:
+            data.update(
+                {
+                    "genome": {
+                        "alias": args.genome_assembly,
+                        "digest": "",
+                    }
+                }
+            )
+
         for plot in plots:
             plot_id = plot["name"]
             del plot["name"]
