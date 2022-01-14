@@ -3,9 +3,14 @@
 bedfile statistics generating pipeline
 """
 
-__author__ = ["Michal Stolarczyk", "Ognen Duzlevski", "Jose Verdezoto"]
+__author__ = [
+    "Michal Stolarczyk",
+    "Ognen Duzlevski",
+    "Jose Verdezoto",
+    "Bingjie Xue",
+]
 __email__ = "michal@virginia.edu"
-__version__ = "0.0.3-dev"
+__version__ = "0.0.4-dev"
 
 from argparse import ArgumentParser
 from hashlib import md5

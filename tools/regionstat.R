@@ -124,7 +124,7 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
     name=fileId,
     gc_content=ifelse(bsGenomeAvail, mean(gcvec), NA),
     regions_no=length(query),
-    mean_absolute_TSS_dist=mean(abs(TSSdist), na.rm=TRUE),
+    median_absolute_TSS_dist=median(abs(TSSdist), na.rm=TRUE),
     mean_region_width=mean(widths),
     md5sum=opt$digest
   )
