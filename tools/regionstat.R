@@ -115,17 +115,17 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   if (cellMatrix == "None") {
     message("open signal matrix not provided. Skipping tissue specificity plot ... ")
   } else {
-    plotBoth("open_chromatin", plotOpenSignal(calcOpenSignal(query, data.table::fread(cellMatrix))))
+    plotBoth("open_chromatin", plotSummarySignal(calcSummarySignal(query, data.table::fread(cellMatrix))))
     plots = rbind(plots, getPlotReportDF("open_chromatin", "Cell specific enrichment for open chromatin"))
   }
   
   # Note: names of the list elements MUST match what's defined in: https://github.com/databio/bbconf/blob/master/bbconf/schemas/bedfiles_schema.yaml
   bedmeta = list(
     name=fileId,
-    gc_content=ifelse(bsGenomeAvail, mean(gcvec), NA),
+    gc_content=ifelse(bsGenomeAvail, signif(mean(gcvec), digits = 4), NA),
     regions_no=length(query),
-    median_TSS_dist=median(abs(TSSdist), na.rm=TRUE),
-    mean_region_width=mean(widths),
+    median_TSS_dist=signif(median(abs(TSSdist), na.rm=TRUE), digits = 4),
+    mean_region_width=signif(mean(widths), digits = 4),
     md5sum=opt$digest
   )
   write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
