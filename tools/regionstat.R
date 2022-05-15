@@ -2,7 +2,6 @@ library(GenomicDistributions)
 library(GenomicDistributionsData)
 library(optparse)
 library(tools)
-library(conflicted)
 library(R.utils)
 
 trim <- IRanges::trim
