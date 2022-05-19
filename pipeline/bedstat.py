@@ -21,6 +21,7 @@ import sys
 import warnings
 import tempfile
 import requests
+import gzip
 
 import pypiper
 import bbconf
@@ -80,24 +81,24 @@ parser = pypiper.add_pypiper_args(parser, groups=["pypiper", "common", "looper",
 
 args = parser.parse_args()
 
-bbc = bbconf.BedBaseConf(config_path=args.bedbase_config, database_only=True)
-bedstat_output_path = bbc.get_bedstat_output_path()
 
-bed_digest = md5(open(args.bedfile, "rb").read()).hexdigest()
-bedfile_name = os.path.split(args.bedfile)[1]
-# need to split twice since there are 2 exts
-fileid = os.path.splitext(os.path.splitext(bedfile_name)[0])[0]
-outfolder = os.path.abspath(os.path.join(bedstat_output_path, bed_digest))
-json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
-json_plots_file_path = os.path.abspath(os.path.join(outfolder, fileid + "_plots.json"))
-bed_relpath = os.path.relpath(
-    args.bedfile,
-    os.path.abspath(os.path.join(bedstat_output_path, os.pardir, os.pardir)),
-)
-bigbed_relpath = os.path.relpath(
-    os.path.join(args.bigbed, fileid + ".bigBed"),
-    os.path.abspath(os.path.join(bedstat_output_path, os.pardir, os.pardir)),
-)
+def hash_bedfile(filepath):
+    """generate digest for bedfile"""
+    with gzip.open(filepath, "rb") as f:
+        # concate column values
+        chrs = ",".join([row.split()[0].decode("utf-8") for row in f])
+        starts = ",".join([row.split()[1].decode("utf-8") for row in f])
+        ends = ",".join([row.split()[2].decode("utf-8") for row in f])
+        # hash column values
+        chr_digest = md5(chrs.encode("utf-8")).hexdigest()
+        start_digest = md5(starts.encode("utf-8")).hexdigest()
+        end_digest = md5(ends.encode("utf-8")).hexdigest()
+        # hash column digests
+        bed_digest = md5(
+            ",".join([chr_digest, start_digest, end_digest]).encode("utf-8")
+        ).hexdigest()
+
+        return bed_digest
 
 
 def convert_unit(size_in_bytes):
@@ -116,6 +117,27 @@ def get_file_size(file_name):
     """Get file in size in given unit like KB, MB or GB"""
     size = os.path.getsize(file_name)
     return convert_unit(size)
+
+
+bbc = bbconf.BedBaseConf(config_path=args.bedbase_config, database_only=True)
+bedstat_output_path = bbc.get_bedstat_output_path()
+
+# bed_digest = md5(open(args.bedfile, "rb").read()).hexdigest()
+bed_digest = hash_bedfile(args.bedfile)
+bedfile_name = os.path.split(args.bedfile)[1]
+# need to split twice since there are 2 exts
+fileid = os.path.splitext(os.path.splitext(bedfile_name)[0])[0]
+outfolder = os.path.abspath(os.path.join(bedstat_output_path, bed_digest))
+json_file_path = os.path.abspath(os.path.join(outfolder, fileid + ".json"))
+json_plots_file_path = os.path.abspath(os.path.join(outfolder, fileid + "_plots.json"))
+bed_relpath = os.path.relpath(
+    args.bedfile,
+    os.path.abspath(os.path.join(bedstat_output_path, os.pardir, os.pardir)),
+)
+bigbed_relpath = os.path.relpath(
+    os.path.join(args.bigbed, fileid + ".bigBed"),
+    os.path.abspath(os.path.join(bedstat_output_path, os.pardir, os.pardir)),
+)
 
 
 def main():
