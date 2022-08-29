@@ -240,12 +240,18 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   # Note: names of the list elements MUST match what's defined in: https://github.com/databio/bbconf/blob/master/bbconf/schemas/bedfiles_schema.yaml
   bedmeta = list(
     name=fileId,
-    gc_content=ifelse(bsGenomeAvail, signif(mean(gcvec), digits = 4), NA),
     regions_no=length(query),
-    median_TSS_dist=ifelse(exists('TSSdist'), signif(median(abs(TSSdist), na.rm=TRUE), digits = 4), NA),
     mean_region_width=ifelse(exists('widths'), signif(mean(widths), digits = 4), NA),
     md5sum=opt$digest
   )
+  if (bsGenomeAvail){
+    gc_content <- list(gc_content = signif(mean(gcvec), digits = 4))
+    bedmeta = append(bedmeta, gc_content)
+  }
+  if (exists('TSSdist')){
+    tss <- list(median_TSS_dist = signif(median(abs(TSSdist), na.rm=TRUE), digits = 4))
+    bedmeta = append(bedmeta, tss)
+  }
   if (exists('partitionsList')){
     write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
   } else {
