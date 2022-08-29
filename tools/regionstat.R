@@ -248,7 +248,10 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   )
   if (exists('partitionsList')){
     write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
-  }
+  } else {
+     write(jsonlite::toJSON(c(bedmeta), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
+    }
+  
   if (exists('plots')){
     write(jsonlite::toJSON(plots, pretty=TRUE), paste0(outfolder, "/", fileId, "_plots.json"))
   }
