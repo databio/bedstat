@@ -244,7 +244,7 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
     mean_region_width=ifelse(exists('widths'), signif(mean(widths), digits = 4), NA),
     md5sum=opt$digest
   )
-  if (bsGenomeAvail){
+  if (gcvec){
     gc_content <- list(gc_content = signif(mean(gcvec), digits = 4))
     bedmeta = append(bedmeta, gc_content)
   }
