@@ -122,8 +122,8 @@ def get_file_size(file_name):
 bbc = bbconf.BedBaseConf(config_path=args.bedbase_config, database_only=True)
 bedstat_output_path = bbc.get_bedstat_output_path()
 
-# bed_digest = md5(open(args.bedfile, "rb").read()).hexdigest()
-bed_digest = hash_bedfile(args.bedfile)
+bed_digest = md5(open(args.bedfile, "rb").read()).hexdigest()
+# bed_digest = hash_bedfile(args.bedfile)
 bedfile_name = os.path.split(args.bedfile)[1]
 # need to split twice since there are 2 exts
 fileid = os.path.splitext(os.path.splitext(bedfile_name)[0])[0]
@@ -169,10 +169,12 @@ def main():
     # if the file exists, of course
     if not args.no_db_commit:
         data = {}
-        with open(json_file_path, "r", encoding="utf-8") as f:
-            data = json.loads(f.read())
-        with open(json_plots_file_path, "r", encoding="utf-8") as f_plots:
-            plots = json.loads(f_plots.read())
+        if os.path.exists(json_file_path):
+            with open(json_file_path, "r", encoding="utf-8") as f:
+                data = json.loads(f.read())
+        if os.path.exists(json_plots_file_path):
+            with open(json_plots_file_path, "r", encoding="utf-8") as f_plots:
+                plots = json.loads(f_plots.read())
         if args.sample_yaml:
             # get the sample-specific metadata from the sample yaml representation
             other = {}
