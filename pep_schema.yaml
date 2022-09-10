@@ -18,7 +18,6 @@ properties:
         genome:
           type: string
           description: "organism genome code"
-          enum: ["hg18", "hg19", "hg38", "mm9", "mm10"]
         narrowpeak:
           type: integer
           minimum: 0
