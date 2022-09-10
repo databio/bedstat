@@ -74,10 +74,6 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
     error = function(e){
       message('Caught an error!')
       print(e)
-    },
-    warning = function(w){
-      message('Caught an warning!')
-      print(w)
     }
   ) 
   
@@ -92,10 +88,6 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
     error = function(e){
       message('Caught an error!')
       print(e)
-    },
-    warning = function(w){
-      message('Caught an warning!')
-      print(w)
     }
   ) 
   
@@ -112,10 +104,6 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
       error = function(e){
         message('Caught an error!')
         print(e, gcvec)
-      },
-      warning = function(w){
-        message('Caught an warning!')
-        print(w)
       }
     ) 
   }
@@ -140,10 +128,6 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
     error = function(e){
       message('Caught an error!')
       print(e)
-    },
-    warning = function(w){
-      message('Caught an warning!')
-      print(w)
     }
   ) 
   
@@ -157,10 +141,6 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
     error = function(e){
       message('Caught an error!')
       print(e)
-    },
-    warning = function(w){
-      message('Caught an warning!')
-      print(w)
     }
   ) 
  
@@ -174,10 +154,6 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
     error = function(e){
       message('Caught an error!')
       print(e)
-    },
-    warning = function(w){
-      message('Caught an warning!')
-      print(w)
     }
   ) 
   
@@ -192,10 +168,6 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
     error = function(e){
       message('Caught an error!')
       print(e, widths)
-    },
-    warning = function(w){
-      message('Caught an warning!')
-      print(w)
     }
   ) 
   
@@ -209,10 +181,6 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
     error = function(e){
       message('Caught an error!')
       print(e)
-    },
-    warning = function(w){
-      message('Caught an warning!')
-      print(w)
     }
   ) 
   
@@ -229,10 +197,6 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
       error = function(e){
         message('Caught an error!')
         print(e)
-      },
-      warning = function(w){
-        message('Caught an warning!')
-        print(w)
       }
     ) 
   }
@@ -244,11 +208,11 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
     mean_region_width=ifelse(exists('widths'), signif(mean(widths), digits = 4), NA),
     md5sum=opt$digest
   )
-  if (gcvec){
+  if (exists('gcvec') && !isEmpty(gcvec)){
     gc_content <- list(gc_content = signif(mean(gcvec), digits = 4))
     bedmeta = append(bedmeta, gc_content)
   }
-  if (exists('TSSdist')){
+  if (exists('TSSdist') && !all(is.na(TSSdist))){
     tss <- list(median_TSS_dist = signif(median(abs(TSSdist), na.rm=TRUE), digits = 4))
     bedmeta = append(bedmeta, tss)
   }
