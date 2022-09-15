@@ -11,7 +11,7 @@
 .install_pkg("R.utils")
 .install_pkg("BiocManager")
 .install_pkg("optparse")
-.install_pkg("devtools")
+# .install_pkg("devtools")
 .install_pkg("GenomicRanges", bioc=TRUE)
 .install_pkg("GenomicFeatures", bioc=TRUE)
 .install_pkg("ensembldb", bioc=TRUE)
