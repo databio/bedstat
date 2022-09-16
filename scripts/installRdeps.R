@@ -18,6 +18,7 @@
 .install_pkg("LOLA", bioc=TRUE)
 .install_pkg("BSgenome", bioc=TRUE)
 if(!require(package = "GenomicDistributions", character.only=TRUE)) {
+    library("devtools")
     devtools::install_github("databio/GenomicDistributions")
 }
 if(!require(package = "GenomicDistributionsData", character.only=TRUE)) {
