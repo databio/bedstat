@@ -1,3 +1,0 @@
-piper
-loopercli
-bbconf>=0.0.1

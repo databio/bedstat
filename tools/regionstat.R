@@ -2,156 +2,235 @@ library(GenomicDistributions)
 library(GenomicDistributionsData)
 library(optparse)
 library(tools)
-data(TSS_hg38)
+library(R.utils)
+
+trim <- IRanges::trim
 
 option_list = list(
-    make_option(c("--bedfile"), type="character", default=NULL, 
-              help="path to a BED file to process", metavar="character"),
-	make_option(c("--fileId"), type="character", default=NULL,
+  make_option(c("--bedfilePath"), type="character", default=NULL, 
+              help="full path to a BED file to process", metavar="character"),
+  make_option(c("--fileId"), type="character", default=NULL,
               help="BED file ID to use for output files prefix", metavar="character"),
-	make_option(c("--openSignalMatrix"), type="character",
-			  help="path to the open signal matrix required for the tissue specificity plot", metavar="character"),
-    make_option(c("--digest"), type="character", default=NULL,
+  make_option(c("--openSignalMatrix"), type="character",
+              help="path to the open signal matrix required for the tissue specificity plot", metavar="character"),
+  make_option(c("--digest"), type="character", default=NULL,
               help="digest of the BED file", metavar="character"),
-    make_option(c("--outputfolder"), type="character", default="output",
+  make_option(c("--outputFolder"), type="character", default="output",
               help="base output folder for results", metavar="character"),
-    make_option(c("--genome"), type="character", default="hg38",
+  make_option(c("--genome"), type="character", default="hg38",
               help="genome reference to calculate against", metavar="character"))
- 
+
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);    
 
-if (is.null(opt$bedfile)) {
-    print_help(opt_parser)
-    stop("Bed file input missing.")
+if (is.null(opt$bedfilePath)) {
+  print_help(opt_parser)
+  stop("Bed file input missing.")
 }
 
 if (is.null(opt$fileId)) {
-    print_help(opt_parser)
-    stop("fileId input missing.")
+  print_help(opt_parser)
+  stop("fileId input missing.")
 }
 
 if (is.null(opt$digest)) {
-    print_help(opt_parser)
-    stop("digest input missing.")
+  print_help(opt_parser)
+  stop("digest input missing.")
 }
 
 
-plotBoth <- function(plotPth, g){
-    print(paste0("Plotting: ", plotPth))
-    ggplot2::ggsave(paste0(plotPth, ".png"), g, device="png", width=8, height=8, units="in")
-    ggplot2::ggsave(paste0(plotPth, ".pdf"), g, device="pdf", width=8, height=8, units="in")
+plotBoth <- function(plotId, g){
+  pth = paste0(opt$outputFolder, "/", fileId, "_", plotId)
+  print(paste0("Plotting: ", pth))
+  ggplot2::ggsave(paste0(pth, ".png"), g, device="png", width=8, height=8, units="in")
+  ggplot2::ggsave(paste0(pth, ".pdf"), g, device="pdf", width=8, height=8, units="in")
 }
 
-doItAall <- function(query, fname, fileId, genome, cellMatrix) {
-    plots = data.frame(stringsAsFactors=F)
-    bsGenomeAvail = ifelse((requireNamespace(BSg, quietly=TRUE) | requireNamespace(BSgm, quietly=TRUE)), TRUE, FALSE)
-    ## continue on with calculations
-	TSSdist = calcFeatureDistRefTSS(query, genome)
-	plotId = "tssdist"
-	plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
-	         plotFeatureDist(TSSdist, featureName="TSS"))
-	newPlot = data.frame("name"=plotId, "caption"="Region-TSS distance distribution")
-    plots = rbind(plots, newPlot)
-    
-    
-    # Chromosomes region distribution plot
-	x = calcChromBinsRef(query, genome)
-    plotId = "chrombins"
-    plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
-             plotChromBins(x))
-    newPlot = data.frame("name"=plotId, "caption"="Regions distribution over chromosomes")
-    plots = rbind(plots, newPlot)
-    
-	# OPTIONAL: Plot GC content only if proper BSgenome package is installed. 
-	if (bsGenomeAvail) {
-		gcvec = calcGCContentRef(query, genome)
-		plotId = "gccontent"
-		plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
-					plotGCContent(gcvec))
-		newPlot = data.frame("name"=plotId, "caption"="GC content")
-		plots = rbind(plots, newPlot)
-	}
-    # Partition Plots, default to percentages
-	gp = calcPartitionsRef(query, genome)
-	plotId = "partitions"
-	plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
-	         plotPartitions(gp))
-	newPlot = data.frame("name"=plotId, "caption"="Regions distribution over genomic partitions")
-	plots = rbind(plots, newPlot)
-
-	ep = calcExpectedPartitionsRef(query, genome)
-	plotId = "expected_partitions"
-	plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
-	         plotExpectedPartitions(ep))
-	newPlot = data.frame("name"=plotId, "caption"="Expected distribution over genomic partitions")
-	plots = rbind(plots, newPlot)
-
-	cp = calcCumulativePartitionsRef(query, genome)
-	plotId = "cumulative_partitions"
-	plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
-			 plotCumulativePartitions(cp))
-	newPlot = data.frame("name"=plotId, "caption"="Cumulative distribution over genomic partitions")
-	plots = rbind(plots, newPlot)
+getPlotReportDF <- function(plotId, title){
+  pth = paste0(opt$outputFolder, "/", fileId, "_", plotId)
+  rel_pth = getRelativePath(pth, paste0(opt$outputFolder, "/../../../"))
+  print(paste0("Writing plot json: ", rel_pth))
+  newPlot = data.frame(
+    "name"=plotId, 
+    "title"=title, 
+    "thumbnail_path"=paste0(rel_pth, ".png"), 
+    "path"=paste0(rel_pth, ".pdf")
+  )
+  return(newPlot)
+}
 
 
-	# flatten the result returned by the function above
-	partiotionNames = as.vector(gp[,"partition"])
-	partitionsList = list()
-	for(i in seq_along(partiotionNames)){
-	    partitionsList[[paste0(partiotionNames[i], "_frequency")]] = 
-	        as.vector(gp[,"Freq"])[i]
-	    partitionsList[[paste0(partiotionNames[i], "_percentage")]] = 
-	        as.vector(gp[,"Freq"])[i]/length(query)	        
-	}
-	
-	# QThist plot
-	widths = calcWidth(query)
-	plotId = "widths_histogram"
-	plotBoth(paste0(outfolder, "/", fileId, "_", plotId),
-		plotQTHist(widths))
-	newPlot = data.frame("name"=plotId, "caption"="Quantile-Trimmed Histogram of Widths")
-	plots = rbind(plots, newPlot)
-
-	# Neighbor regions distance plots
-	dist = calcNeighborDist(query)
-	plotId = "neighbor_distances"
-	plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
-	         plotNeighborDist(dist))
-	newPlot = data.frame("name"=plotId, "caption"="Distance between neighbor regions")
-	plots = rbind(plots, newPlot)
-
-	# OPTIONAL: Add tissue specificity plot if open signal matrix is provided
-	if (cellMatrix == "None") {
-		message("open signal matrix not provided. Skipping tissue specificity plot ... ")
-	} else {
-		matrix = data.table::fread(cellMatrix)
-		op = calcOpenSignal(query, matrix)
-		plotId = "open_chromatin"
-		plotBoth(paste0(outfolder, "/", fileId, "_", plotId), 
-		         plotOpenSignal(op))
-		newPlot = data.frame("name"=plotId, "caption"="Cell specific enrichment for open chromatin")
-		plots = rbind(plots, newPlot)
-	}
-
-	# Note: names of the list elements MUST match what's defined in: https://github.com/databio/bbconf/blob/master/bbconf/const.py
-	bedmeta = list(
-	    id=fileId,
-		gc_content=ifelse(bsGenomeAvail, mean(gcvec), NA),
-		regions_no=length(query),
-		mean_absolute_TSS_dist=mean(abs(TSSdist), na.rm=TRUE),
-		mean_region_width=mean(widths),
-		md5sum=opt$digest,
-		plots=plots,
-		bedfile_path=fname
-	)
-	write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
+doItAall <- function(query, fileId, genome, cellMatrix) {
+  plots = data.frame(stringsAsFactors=F)
+  bsGenomeAvail = ifelse((requireNamespace(BSg, quietly=TRUE) | requireNamespace(BSgm, quietly=TRUE)), TRUE, FALSE)
+  # TSS distance plot
+  tryCatch(
+    expr = {
+      TSSdist = calcFeatureDistRefTSS(query, genome)
+      plotBoth("tssdist", plotFeatureDist(TSSdist, featureName="TSS"))
+      plots = rbind(plots, getPlotReportDF("tssdist", "Region-TSS distance distribution"))
+      message("Successfully calculated and plot TSS distance.")
+    },
+    error = function(e){
+      message('Caught an error!')
+      print(e)
+    }
+  ) 
+  
+  
+  # Chromosomes region distribution plot
+  tryCatch(
+    expr = {
+      plotBoth("chrombins", plotChromBins(calcChromBinsRef(query, genome)))
+      plots = rbind(plots, getPlotReportDF("chrombins", "Regions distribution over chromosomes"))
+      message("Successfully calculated and plot chromosomes region distribution.")
+    },
+    error = function(e){
+      message('Caught an error!')
+      print(e)
+    }
+  ) 
+  
+  
+  # OPTIONAL: Plot GC content only if proper BSgenome package is installed. 
+  if (bsGenomeAvail) {
+    tryCatch(
+      expr = {
+        gcvec = calcGCContentRef(query, genome)
+        plotBoth("gccontent", plotGCContent(gcvec))
+        plots = rbind(plots, getPlotReportDF("gccontent", "GC content"))
+        message("Successfully calculated and plot GC content.")
+      },
+      error = function(e){
+        message('Caught an error!')
+        print(e, gcvec)
+      }
+    ) 
+  }
+  
+  # Partition plots, default to percentages
+  tryCatch(
+    expr = {
+      gp = calcPartitionsRef(query, genome)
+      plotBoth("paritions", plotPartitions(gp))
+      plots = rbind(plots, getPlotReportDF("paritions", "Regions distribution over genomic partitions"))
+      # flatten the result returned by the function above
+      partiotionNames = as.vector(gp[,"partition"])
+      partitionsList = list()
+      for(i in seq_along(partiotionNames)){
+        partitionsList[[paste0(partiotionNames[i], "_frequency")]] = 
+          as.vector(gp[,"Freq"])[i]
+        partitionsList[[paste0(partiotionNames[i], "_percentage")]] = 
+          as.vector(gp[,"Freq"])[i]/length(query)	        
+      }
+      message("Successfully calculated and plot regions distribution over genomic partitions.")
+    },
+    error = function(e){
+      message('Caught an error!')
+      print(e)
+    }
+  ) 
+  
+  # Expected partition plots
+  tryCatch(
+    expr = {
+      plotBoth("expected_partitions", plotExpectedPartitions(calcExpectedPartitionsRef(query, genome)))
+      plots = rbind(plots, getPlotReportDF("expected_partitions", "Expected distribution over genomic partitions"))
+      message("Successfully calculated and plot expected distribution over genomic partitions.")
+    },
+    error = function(e){
+      message('Caught an error!')
+      print(e)
+    }
+  ) 
+ 
+  # Cumulative partition plots
+  tryCatch(
+    expr = {
+      plotBoth("cumulative_partitions", plotCumulativePartitions(calcCumulativePartitionsRef(query, genome)))
+      plots = rbind(plots, getPlotReportDF("cumulative_partitions", "Cumulative distribution over genomic partitions"))
+      message("Successfully calculated and plot cumulative distribution over genomic partitions.")
+    },
+    error = function(e){
+      message('Caught an error!')
+      print(e)
+    }
+  ) 
+  
+  # QThist plot
+  tryCatch(
+    expr = {
+      widths = calcWidth(query)
+      plotBoth("widths_histogram", plotQTHist(widths))
+      plots = rbind(plots, getPlotReportDF("widths_histogram", "Quantile-trimmed histogram of widths"))
+      message("Successfully calculated and plot quantile-trimmed histogram of widths.")
+    },
+    error = function(e){
+      message('Caught an error!')
+      print(e, widths)
+    }
+  ) 
+  
+  # Neighbor regions distance plots
+  tryCatch(
+    expr = {
+      plotBoth("neighbor_distances", plotNeighborDist(calcNeighborDist(query)))
+      plots = rbind(plots, getPlotReportDF("neighbor_distances", "Distance between neighbor regions"))
+      message("Successfully calculated and plot distance between neighbor regions.")
+    },
+    error = function(e){
+      message('Caught an error!')
+      print(e)
+    }
+  ) 
+  
+  # Tissue specificity plot if open signal matrix is provided
+  if (cellMatrix == "None") {
+    message("open signal matrix not provided. Skipping tissue specificity plot ... ")
+  } else {
+    tryCatch(
+      expr = {
+        plotBoth("open_chromatin", plotSummarySignal(calcSummarySignal(query, data.table::fread(cellMatrix))))
+        plots = rbind(plots, getPlotReportDF("open_chromatin", "Cell specific enrichment for open chromatin"))
+        message("Successfully calculated and plot cell specific enrichment for open chromatin.")
+      },
+      error = function(e){
+        message('Caught an error!')
+        print(e)
+      }
+    ) 
+  }
+  
+  # Note: names of the list elements MUST match what's defined in: https://github.com/databio/bbconf/blob/master/bbconf/schemas/bedfiles_schema.yaml
+  bedmeta = list(
+    name=fileId,
+    regions_no=length(query),
+    mean_region_width=ifelse(exists('widths'), signif(mean(widths), digits = 4), NA),
+    md5sum=opt$digest
+  )
+  if (exists('gcvec') && !isEmpty(gcvec)){
+    gc_content <- list(gc_content = signif(mean(gcvec), digits = 4))
+    bedmeta = append(bedmeta, gc_content)
+  }
+  if (exists('TSSdist') && !all(is.na(TSSdist))){
+    tss <- list(median_TSS_dist = signif(median(abs(TSSdist), na.rm=TRUE), digits = 4))
+    bedmeta = append(bedmeta, tss)
+  }
+  if (exists('partitionsList')){
+    write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
+  } else {
+     write(jsonlite::toJSON(c(bedmeta), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
+    }
+  
+  if (exists('plots')){
+    write(jsonlite::toJSON(plots, pretty=TRUE), paste0(outfolder, "/", fileId, "_plots.json"))
+  }
 }
 
 # define values and output folder for doitall()
 fileId = opt$fileId
-fn = opt$bedfile
-outfolder = opt$outputfolder
+bedPath = opt$bedfilePath
+outfolder = opt$outputFolder
 genome = opt$genome
 cellMatrix = opt$openSignalMatrix
 orgName = "Mmusculus"
@@ -163,7 +242,5 @@ BSg = paste0("BSgenome.", orgName , ".UCSC.", genome)
 BSgm = paste0(BSg, ".masked")
 
 # read bed file and run doitall()
-query = LOLA::readBed(fn)
-doItAall(query, fn, fileId, genome, cellMatrix)
-
-
+query = LOLA::readBed(bedPath)
+doItAall(query, fileId, genome, cellMatrix)

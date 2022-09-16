@@ -1,3 +1,4 @@
+![Test bedstat pipeline](https://github.com/databio/bedstat/workflows/Test%20bedstat%20pipeline/badge.svg)
 # bedstat
 pipeline for obtaining statistics about bed files
 
@@ -35,60 +36,37 @@ The input PEP can be validated against the [JSON schema in this repository](pep_
 eido validate <path/to/pep> -s https://schema.databio.org/pipelines/bedstat.yaml
 ```
 
-### 2. Create a persistent volume to house elasticsearch data
+### 2. Run PostgreSQL
+
+For example, to run an instance in a container and make the data persist, execute:
 
 ```
-docker volume create es-data
+docker volume create postgres-data
+docker run -d --name bedbase-postgres -p 5432:5432 -e POSTGRES_PASSWORD=bedbasepassword -e POSTGRES_USER=postgres -e POSTGRES_DB=postgres -v postgres-data:/var/lib/postgresql/data postgres
 ```
+Provided environment variables need to match the settings in bedbase configuration file
 
-### 3. Run the docker container for elasticsearch
+### 3. Run the bedstat pipeline on the PEP
 
-```
-docker run -p 9200:9200 -p 9300:9300 -v es-data:/usr/share/elasticsearch/data -e "xpack.ml.enabled=false" \
-  -e "discovery.type=single-node" elasticsearch:7.5.1
-```
-
-### 4. Run the bedstat pipeline on the PEP
-
-Then simply run the looper command to run the pipeline for each bed file. It will create a set of plots and statistics per bed file and insert the metadata into Elastic:
+Then simply run the `looper run` command to run the pipeline for each bed file. It will create a set of plots and statistics per bed file and insert the metadata into PostgreSQL:
 
 ```
 looper run project/bedstat_config.yaml
 ```
 
-The data loaded into elasticsearch should persist between elasticsearch invocations, on the es-data docker volume created above in step 2.
-
-### 5. (optional) Run Kibana
-
-Kibana can be used in order to see ElasticSearch data in a "GUI" kind of a way.
-
-Pull a matching Kibana docker image. Make sure the Elasticsearch and Kibana container tags match:
-```
-docker pull docker.elastic.co/kibana/kibana:7.5.1
-```
-
-Get the ID of the docker container (started above) running ElasticSearch via 
-```
-docker ps | grep elasticsearch
-```
-
-Run Kibana to link to that container:
-```
-docker run --link <ID OF ELASTIC CONTAINER HERE>:elasticsearch -p 5601:5601  docker.elastic.co/kibana/kibana:7.5.1
-```
-
-Point your local web browser to http://localhost:5601
-
----
+The data loaded into PostgreSQL should persist between PostgreSQL invocations, on the `postgres-data` docker volume created above in step 2.
 
 ## Additional dependencies
 
 [regionstat.R](tools/regionstat.R) script is used to calculate the bed file statistics, so the pipeline also depends on several R packages:
 
+* `R.utils`
 * `BiocManager`
 * `optparse`
 * `devtools`
 * `GenomicRanges`
+* `GenomicFeatures`
+* `ensembldb`
 * `GenomicDistributions`
 * `BSgenome.<organim>.UCSC.<genome>` *depending on the genome used* 
 * `LOLA`

@@ -1,0 +1,4 @@
+-e git+https://github.com/databio/yacman@dev#egg=yacman
+-e git+https://github.com/pepkit/pipestat@dev#egg=pipestat
+
+

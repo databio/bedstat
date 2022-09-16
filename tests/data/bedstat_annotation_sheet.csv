@@ -1,0 +1,2 @@
+sample_name,file_name,genome,exp_protocol,cell_type,tissue,antibody,treatment,data_source,GSE,GSM,description,format
+bedbase_demo1,test_hg38.bed.gz,hg38,ChiPseq,GM12878,NA,IKZF1,None,GEO,GSE105587,,IKZF1 ChIP-seq on human GM12878,bed
