@@ -21,5 +21,5 @@ if(!require(package = "GenomicDistributions", character.only=TRUE)) {
     devtools::install_github("databio/GenomicDistributions")
 }
 if(!require(package = "GenomicDistributionsData", character.only=TRUE)) {
-    install.packages("http://big.databio.org/GenomicDistributionsData/GenomicDistributionsData_0.0.1.tar.gz", repos=NULL)
+    install.packages("http://big.databio.org/GenomicDistributionsData/GenomicDistributionsData_0.0.2.tar.gz", repos=NULL)
 }

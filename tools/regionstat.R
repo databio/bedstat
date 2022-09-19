@@ -66,8 +66,7 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   # TSS distance plot
   tryCatch(
     expr = {
-      TSSdist = calcFeatureDistRefTSS(query, genome)
-      plotBoth("tssdist", plotFeatureDist(TSSdist, featureName="TSS"))
+      plotBoth("tssdist", plotFeatureDist( calcFeatureDistRefTSS(query, genome), featureName="TSS"))
       plots = rbind(plots, getPlotReportDF("tssdist", "Region-TSS distance distribution"))
       message("Successfully calculated and plot TSS distance.")
     },
