@@ -1,6 +1,7 @@
 library(GenomicDistributions)
 library(GenomicDistributionsData)
 library(GenomeInfoDb)
+library(ensembldb)
 library(optparse)
 library(tools)
 library(R.utils)
@@ -19,7 +20,11 @@ option_list = list(
   make_option(c("--outputFolder"), type="character", default="output",
               help="base output folder for results", metavar="character"),
   make_option(c("--genome"), type="character", default="hg38",
-              help="genome reference to calculate against", metavar="character"))
+              help="genome reference to calculate against", metavar="character"),
+  make_option(c("--ensDbGtf"), type="character",
+              help="path to the Ensembl annotation gtf file", metavar="character")
+)
+
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);    
@@ -39,6 +44,93 @@ if (is.null(opt$digest)) {
   stop("digest input missing.")
 }
 
+buildEnsDb <- function(genome){
+  ## generate the SQLite database file
+  DB <- ensDbFromGtf(gtf = ensDbGtf)
+  ## load the DB file directly
+  EDB <- EnsDb(DB)
+  
+  return(EDB)
+}
+
+myGeneModels <- function(genome) {
+  geneModels = tryCatch({ 
+    message("building geneModels using Ensembl")
+    EnsDb = buildEnsDb(genome)
+    codingFilter = AnnotationFilter::AnnotationFilter(~ gene_biotype == "protein_coding")
+    geneFeats = ensembldb::genes(EnsDb, filter = codingFilter, columns=NULL)
+    exonFeats = ensembldb::exons(EnsDb, filter = codingFilter, columns=NULL)
+    UTR5Feats = ensembldb::fiveUTRsByTranscript(EnsDb, 
+                                                filter = codingFilter,
+                                                columns = NULL)
+    UTR3Feats = ensembldb::threeUTRsByTranscript(EnsDb, 
+                                                 filter = codingFilter, 
+                                                 columns = NULL)
+    UTR5Feats = unlist(UTR5Feats)
+    UTR3Feats = unlist(UTR3Feats)
+    # Smash 
+    geneFeats = reduce(geneFeats)
+    exonFeats = reduce(exonFeats)
+    UTR5Feats = reduce(UTR5Feats)
+    UTR3Feats = reduce(UTR3Feats)
+    # Keep only standard chromosomes
+    geneFeats= keepStandardChromosomes(geneFeats, pruning.mode = "coarse")
+    exonFeats = keepStandardChromosomes(exonFeats, pruning.mode = "coarse")
+    UTR5Feats = keepStandardChromosomes(UTR5Feats, pruning.mode = "coarse")
+    UTR3Feats = keepStandardChromosomes(UTR3Feats, pruning.mode = "coarse")
+    # Since we're storing this data, we want it to be small.
+    elementMetadata(geneFeats) = NULL
+    elementMetadata(exonFeats) = NULL
+    elementMetadata(UTR5Feats) = NULL
+    elementMetadata(UTR3Feats) = NULL
+    # Change from ensembl-style chrom annotation to UCSC_style
+    seqlevels(geneFeats) = paste0("chr", seqlevels(geneFeats))
+    seqlevels(exonFeats) = paste0("chr", seqlevels(exonFeats))
+    seqlevels(UTR5Feats) = paste0("chr", seqlevels(UTR5Feats))
+    seqlevels(UTR3Feats) = paste0("chr", seqlevels(UTR3Feats))
+    list(genesGR=geneFeats, exonsGR=exonFeats, threeUTRGR=UTR3Feats, 
+         fiveUTRGR=UTR5Feats)
+  }, error=function(err){
+    # Try a TxDb instead
+    message("Failed, trying a UCSC TxDb instead")
+    message("Here's the original error message:")
+    message(err)
+    txdb = loadTxDb(genome)
+    exonFeats = GenomicFeatures::exons(txdb)
+    geneFeats = GenomicFeatures::transcripts(txdb)
+    UTR3Feats = GenomicFeatures::threeUTRsByTranscript(txdb)
+    UTR5Feats = GenomicFeatures::fiveUTRsByTranscript(txdb) 
+    geneFeats = reduce(geneFeats)
+    exonFeats = reduce(exonFeats)
+    list(genesGR=geneFeats, exonsGR=exonFeats,  threeUTRGR=UTR3Feats, 
+         fiveUTRGR=UTR5Feats)
+  })
+  return(geneModels)
+}
+
+myTSS <- function(genome) {
+  feats = tryCatch({
+    message("building TSS using Ensembl")
+    EnsDb =  buildEnsDb(genome)
+    codingFilter = AnnotationFilter::AnnotationFilter(
+      ~ gene_biotype == "protein_coding")
+    featsWide = ensembldb::genes(EnsDb, filter=codingFilter)
+    # Grab just a single base pair at the TSS
+    feats = promoters(featsWide, 1, 1)
+    # Change from ensembl-style chrom annotation to UCSC_style
+    seqlevels(feats) = paste0("chr", seqlevels(feats))
+    feats
+  }, error=function(err){
+    message("failed, trying a UCSC TxDb instead")
+    message("Here's the original error message:")
+    message(err)
+    # Using TxDb
+    txdb = loadTxDb(genome)
+    # Grab just a single base pair at the TSS
+    GenomicFeatures::promoters(txdb, 1, 1)
+  })
+  return(feats)
+}
 
 myChromSizes <- function(genome){
   if (requireNamespace(BSgm, quietly=TRUE)){
@@ -79,7 +171,16 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   # TSS distance plot
   tryCatch(
     expr = {
-      plotBoth("tssdist", plotFeatureDist( calcFeatureDistRefTSS(query, genome), featureName="TSS"))
+      if (genome %in% c("hg19", "hg38", "mm10", "mm9")){
+        plotBoth("tssdist", plotFeatureDist( calcFeatureDistRefTSS(query, genome), featureName="TSS"))
+      } else{
+        if (ensDbGtf == "None") {
+          message("Ensembl annotation gtf file not provided. Skipping TSS distance plot ... ")
+        } else {
+        tss = myTSS(genome)
+        plotBoth("tssdist", plotFeatureDist( calcFeatureDist(query, tss), featureName="TSS"))
+        }
+      }
       plots = rbind(plots, getPlotReportDF("tssdist", "Region-TSS distance distribution"))
       message("Successfully calculated and plot TSS distance.")
     },
@@ -260,6 +361,7 @@ bedPath = opt$bedfilePath
 outfolder = opt$outputFolder
 genome = opt$genome
 cellMatrix = opt$openSignalMatrix
+ensDbGtf = opt$ensDbGtf
 
 
 # build BSgenome package ID to check whether it's installed
@@ -281,9 +383,6 @@ if (genome == "T2T"){
 }
 
 BSgm = paste0(BSg, ".masked")
-
-
-
 
 # read bed file and run doitall()
 query = LOLA::readBed(bedPath)
