@@ -43,6 +43,15 @@ parser.add_argument(
     help="a full path to the openSignalMatrix required for the tissue "
     "specificity plots",
 )
+
+parser.add_argument(
+    "--ensdb-gtf",
+    type=str,
+    required=False,
+    default=None,
+    help="a full path to the ensdb gtf file required for genomes not in GDdata ",
+)
+
 parser.add_argument(
     "--bigbed",
     type=str,
@@ -158,8 +167,8 @@ def main():
         command = (
             f"Rscript {rscript_path} --bedfilePath={args.bedfile} "
             f"--fileId={fileid} --openSignalMatrix={args.open_signal_matrix} "
-            f"--outputFolder={outfolder} --genome={args.genome_assembly} "
-            f"--digest={bed_digest}"
+            f"--outputFolder={outfolder} --genome={args.genome_assembly}"
+            f"--ensDbGtf={args.ensdb_gtf}  --digest={bed_digest}"
         )
         print(command)
         pm.run(cmd=command, target=json_file_path)
