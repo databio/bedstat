@@ -1,5 +1,6 @@
 library(GenomicDistributions)
 library(GenomicDistributionsData)
+library(GenomeInfoDb)
 library(optparse)
 library(tools)
 library(R.utils)
@@ -38,6 +39,18 @@ if (is.null(opt$digest)) {
   stop("digest input missing.")
 }
 
+
+myChromSizes <- function(genome){
+  if (requireNamespace(BSgm, quietly=TRUE)){
+    library (BSgm, character.only = TRUE)
+    BSG = eval(as.name(BSgm))
+  } else {
+    library (BSg, character.only = TRUE)
+    BSG = eval(as.name(BSg))
+  }
+  chromSizesGenome = seqlengths(BSG)
+  return(chromSizesGenome)
+}
 
 plotBoth <- function(plotId, g){
   pth = paste0(opt$outputFolder, "/", fileId, "_", plotId)
@@ -80,7 +93,14 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   # Chromosomes region distribution plot
   tryCatch(
     expr = {
-      plotBoth("chrombins", plotChromBins(calcChromBinsRef(query, genome)))
+      if (genome %in% c("mm39", "dm3", "dm6", "ce10", "ce11", "danRer10", "danRer10", "T2T")){
+        chromSizes = myChromSizes(genome)
+        genomeBins  = getGenomeBins(chromSizes)
+        plotBoth("chrombins", plotChromBins(calcChromBins(query, genomeBins)))
+      } else{
+        plotBoth("chrombins", plotChromBins(calcChromBinsRef(query, genome)))
+      }
+      
       plots = rbind(plots, getPlotReportDF("chrombins", "Regions distribution over chromosomes"))
       message("Successfully calculated and plot chromosomes region distribution.")
     },
@@ -95,7 +115,15 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   if (bsGenomeAvail) {
     tryCatch(
       expr = {
-        gcvec = calcGCContentRef(query, genome)
+        if (requireNamespace(BSgm, quietly=TRUE)){
+          library (BSgm, character.only = TRUE)
+          bsg = eval(as.name(BSgm))
+          gcvec = calcGCContent(query, bsg)
+        } else {
+          library (BSg, character.only = TRUE)
+          bsg = eval(as.name(BSg))
+          gcvec = calcGCContent(query, bsg)
+        }
         plotBoth("gccontent", plotGCContent(gcvec))
         plots = rbind(plots, getPlotReportDF("gccontent", "GC content"))
         message("Successfully calculated and plot GC content.")
@@ -232,13 +260,30 @@ bedPath = opt$bedfilePath
 outfolder = opt$outputFolder
 genome = opt$genome
 cellMatrix = opt$openSignalMatrix
-orgName = "Mmusculus"
+
 
 # build BSgenome package ID to check whether it's installed
-if (startsWith(genome, "hg") | startsWith(genome, "grch")) orgName = "Hsapiens"
+if (genome == "T2T"){
+  BSg = "BSgenome.Hsapiens.NCBI.T2T.CHM13v2.0"
+} else {
+  if (startsWith(genome, "hg") | startsWith(genome, "grch")) {
+  orgName = "Hsapiens"
+  } else if (startsWith(genome, "mm") | startsWith(genome, "grcm")){
+  orgName = "Mmusculus"
+  } else if (startsWith(genome, "dm")){
+  orgName = "Dmelanogaster"
+  } else if (startsWith(genome, "ce")){
+  orgName = "Celegans"
+  } else if (startsWith(genome, "danRer")){
+  orgName = "Drerio"
+  } 
+  BSg = paste0("BSgenome.", orgName , ".UCSC.", genome)
+}
 
-BSg = paste0("BSgenome.", orgName , ".UCSC.", genome)
 BSgm = paste0(BSg, ".masked")
+
+
+
 
 # read bed file and run doitall()
 query = LOLA::readBed(bedPath)
