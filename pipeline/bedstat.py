@@ -45,7 +45,7 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--ensdb-gtf",
+    "--ensdb",
     type=str,
     required=False,
     default=None,
@@ -59,6 +59,7 @@ parser.add_argument(
     default=None,
     help="a full path to the bigbed files",
 )
+
 parser.add_argument(
     "--bedbase-config",
     dest="bedbase_config",
@@ -167,8 +168,8 @@ def main():
         command = (
             f"Rscript {rscript_path} --bedfilePath={args.bedfile} "
             f"--fileId={fileid} --openSignalMatrix={args.open_signal_matrix} "
-            f"--outputFolder={outfolder} --genome={args.genome_assembly}"
-            f"--ensDbGtf={args.ensdb_gtf}  --digest={bed_digest}"
+            f"--outputFolder={outfolder} --genome={args.genome_assembly} "
+            f"--ensdb={args.ensdb} --digest={bed_digest}"
         )
         print(command)
         pm.run(cmd=command, target=json_file_path)

@@ -21,7 +21,7 @@ option_list = list(
               help="base output folder for results", metavar="character"),
   make_option(c("--genome"), type="character", default="hg38",
               help="genome reference to calculate against", metavar="character"),
-  make_option(c("--ensDbGtf"), type="character",
+  make_option(c("--ensdb"), type="character",
               help="path to the Ensembl annotation gtf file", metavar="character")
 )
 
@@ -44,19 +44,19 @@ if (is.null(opt$digest)) {
   stop("digest input missing.")
 }
 
-buildEnsDb <- function(genome){
+buildEnsDb <- function(gtffile){
   ## generate the SQLite database file
-  DB <- ensDbFromGtf(gtf = ensDbGtf)
+  DB <- ensDbFromGtf(gtf = gtffile)
   ## load the DB file directly
   EDB <- EnsDb(DB)
   
   return(EDB)
 }
 
-myGeneModels <- function(genome) {
+myGeneModels <- function(genome, EDB) {
   geneModels = tryCatch({ 
     message("building geneModels using Ensembl")
-    EnsDb = buildEnsDb(genome)
+    EnsDb = EDB
     codingFilter = AnnotationFilter::AnnotationFilter(~ gene_biotype == "protein_coding")
     geneFeats = ensembldb::genes(EnsDb, filter = codingFilter, columns=NULL)
     exonFeats = ensembldb::exons(EnsDb, filter = codingFilter, columns=NULL)
@@ -108,10 +108,10 @@ myGeneModels <- function(genome) {
   return(geneModels)
 }
 
-myTSS <- function(genome) {
+myTSS <- function(genome, EDB) {
   feats = tryCatch({
     message("building TSS using Ensembl")
-    EnsDb =  buildEnsDb(genome)
+    EnsDb =  EDB
     codingFilter = AnnotationFilter::AnnotationFilter(
       ~ gene_biotype == "protein_coding")
     featsWide = ensembldb::genes(EnsDb, filter=codingFilter)
@@ -131,6 +131,17 @@ myTSS <- function(genome) {
   })
   return(feats)
 }
+
+myPartitionList <- function(genome, EDB){
+  geneModels = myGeneModels(genome, EDB)
+  partitionList = genomePartitionList(geneModels$genesGR,
+                                      geneModels$exonsGR,
+                                      geneModels$threeUTRGR,
+                                      geneModels$fiveUTRGR)
+  
+  return (partitionList) 
+}
+
 
 myChromSizes <- function(genome){
   if (requireNamespace(BSgm, quietly=TRUE)){
@@ -171,13 +182,13 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   # TSS distance plot
   tryCatch(
     expr = {
-      if (genome %in% c("hg19", "hg38", "mm10", "mm9")){
-        plotBoth("tssdist", plotFeatureDist( calcFeatureDistRefTSS(query, genome), featureName="TSS"))
+      if (!(genome %in% c("hg19", "hg38", "mm10", "mm9")) && gtffile == "None"){
+        message("Ensembl annotation gtf file not provided. Skipping TSS distance plot ... ")
       } else{
-        if (ensDbGtf == "None") {
-          message("Ensembl annotation gtf file not provided. Skipping TSS distance plot ... ")
+        if (genome %in% c("hg19", "hg38", "mm10", "mm9")) {
+          plotBoth("tssdist", plotFeatureDist( calcFeatureDistRefTSS(query, genome), featureName="TSS"))
         } else {
-        tss = myTSS(genome)
+        tss = myTSS(genome, EDB)
         plotBoth("tssdist", plotFeatureDist( calcFeatureDist(query, tss), featureName="TSS"))
         }
       }
@@ -239,19 +250,29 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   # Partition plots, default to percentages
   tryCatch(
     expr = {
-      gp = calcPartitionsRef(query, genome)
-      plotBoth("paritions", plotPartitions(gp))
-      plots = rbind(plots, getPlotReportDF("paritions", "Regions distribution over genomic partitions"))
-      # flatten the result returned by the function above
-      partiotionNames = as.vector(gp[,"partition"])
-      partitionsList = list()
-      for(i in seq_along(partiotionNames)){
-        partitionsList[[paste0(partiotionNames[i], "_frequency")]] = 
-          as.vector(gp[,"Freq"])[i]
-        partitionsList[[paste0(partiotionNames[i], "_percentage")]] = 
-          as.vector(gp[,"Freq"])[i]/length(query)	        
+      if (!(genome %in% c("hg19", "hg38", "mm10")) && gtffile == "None"){
+        message("Ensembl annotation gtf file not provided. Skipping partition plot ... ")
+      } else {
+        if (genome %in% c("hg19", "hg38", "mm10")) {
+          gp = calcPartitionsRef(query, genome)
+          plotBoth("paritions", plotPartitions(gp))
+        } else {
+          partitionList = myPartitionList(genome, EDB)
+          gp = calcPartitions(query, partitionList)
+          plotBoth("paritions", plotPartitions(gp))
+        }
+        plots = rbind(plots, getPlotReportDF("paritions", "Regions distribution over genomic partitions"))
+        # flatten the result returned by the function above
+        partiotionNames = as.vector(gp[,"partition"])
+        partitionsList = list()
+        for(i in seq_along(partiotionNames)){
+          partitionsList[[paste0(partiotionNames[i], "_frequency")]] = 
+            as.vector(gp[,"Freq"])[i]
+          partitionsList[[paste0(partiotionNames[i], "_percentage")]] = 
+            as.vector(gp[,"Freq"])[i]/length(query)	        
+        }
+        message("Successfully calculated and plot regions distribution over genomic partitions.")
       }
-      message("Successfully calculated and plot regions distribution over genomic partitions.")
     },
     error = function(e){
       message('Caught an error!')
@@ -262,9 +283,20 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   # Expected partition plots
   tryCatch(
     expr = {
-      plotBoth("expected_partitions", plotExpectedPartitions(calcExpectedPartitionsRef(query, genome)))
-      plots = rbind(plots, getPlotReportDF("expected_partitions", "Expected distribution over genomic partitions"))
-      message("Successfully calculated and plot expected distribution over genomic partitions.")
+      if (!(genome %in% c("hg19", "hg38", "mm10")) && gtffile == "None"){
+        message("Ensembl annotation gtf file not provided. Skipping expected partition plot ... ")
+      } else{
+        if (genome %in% c("hg19", "hg38", "mm10")) {
+          plotBoth("expected_partitions", plotExpectedPartitions(calcExpectedPartitionsRef(query, genome)))
+        } else {
+          partitionList = myPartitionList(genome, EDB)
+          chromSizes = myChromSizes(genome)
+          genomeSize = sum(chromSizes)
+          plotBoth("expected_partitions", plotExpectedPartitions(calcExpectedPartitions(query, partitionList, genomeSize)))
+        }
+        plots = rbind(plots, getPlotReportDF("expected_partitions", "Expected distribution over genomic partitions"))
+        message("Successfully calculated and plot expected distribution over genomic partitions.")
+      }
     },
     error = function(e){
       message('Caught an error!')
@@ -275,9 +307,18 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   # Cumulative partition plots
   tryCatch(
     expr = {
-      plotBoth("cumulative_partitions", plotCumulativePartitions(calcCumulativePartitionsRef(query, genome)))
-      plots = rbind(plots, getPlotReportDF("cumulative_partitions", "Cumulative distribution over genomic partitions"))
-      message("Successfully calculated and plot cumulative distribution over genomic partitions.")
+      if (!(genome %in% c("hg19", "hg38", "mm10")) && gtffile == "None"){
+        message("Ensembl annotation gtf file not provided. Skipping cumulative partition plot ... ")
+      } else{
+        if (genome %in% c("hg19", "hg38", "mm10")) {
+          plotBoth("cumulative_partitions", plotCumulativePartitions(calcCumulativePartitionsRef(query, genome)))
+        } else{
+          partitionList = myPartitionList(genome, EDB)
+          plotBoth("cumulative_partitions", plotCumulativePartitions(calcCumulativePartitions(query, partitionList)))
+        }
+        plots = rbind(plots, getPlotReportDF("cumulative_partitions", "Cumulative distribution over genomic partitions"))
+        message("Successfully calculated and plot cumulative distribution over genomic partitions.")
+      }
     },
     error = function(e){
       message('Caught an error!')
@@ -361,7 +402,7 @@ bedPath = opt$bedfilePath
 outfolder = opt$outputFolder
 genome = opt$genome
 cellMatrix = opt$openSignalMatrix
-ensDbGtf = opt$ensDbGtf
+gtffile = opt$ensdb
 
 
 # build BSgenome package ID to check whether it's installed
@@ -383,6 +424,12 @@ if (genome == "T2T"){
 }
 
 BSgm = paste0(BSg, ".masked")
+
+print(gtffile)
+
+if (gtffile != "None") {
+  EDB = buildEnsDb(gtffile)
+}
 
 # read bed file and run doitall()
 query = LOLA::readBed(bedPath)
