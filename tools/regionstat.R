@@ -47,7 +47,6 @@ if (is.null(opt$digest)) {
 myPartitionList <- function(gtffile){
   features = c("gene", "exon", "three_prime_utr", "five_prime_utr")
   geneModels = getGeneModelsFromGTF(gtffile, features, TRUE)
-  print(geneModels)
   partitionList = genomePartitionList(geneModels$gene,
                                       geneModels$exon,
                                       geneModels$three_prime_utr,
