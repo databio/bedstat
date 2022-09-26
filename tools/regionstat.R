@@ -44,100 +44,14 @@ if (is.null(opt$digest)) {
   stop("digest input missing.")
 }
 
-buildEnsDb <- function(gtffile){
-  ## generate the SQLite database file
-  DB <- ensDbFromGtf(gtf = gtffile)
-  ## load the DB file directly
-  EDB <- EnsDb(DB)
-  
-  return(EDB)
-}
-
-myGeneModels <- function(genome, EDB) {
-  geneModels = tryCatch({ 
-    message("building geneModels using Ensembl")
-    EnsDb = EDB
-    codingFilter = AnnotationFilter::AnnotationFilter(~ gene_biotype == "protein_coding")
-    geneFeats = ensembldb::genes(EnsDb, filter = codingFilter, columns=NULL)
-    exonFeats = ensembldb::exons(EnsDb, filter = codingFilter, columns=NULL)
-    UTR5Feats = ensembldb::fiveUTRsByTranscript(EnsDb, 
-                                                filter = codingFilter,
-                                                columns = NULL)
-    UTR3Feats = ensembldb::threeUTRsByTranscript(EnsDb, 
-                                                 filter = codingFilter, 
-                                                 columns = NULL)
-    UTR5Feats = unlist(UTR5Feats)
-    UTR3Feats = unlist(UTR3Feats)
-    # Smash 
-    geneFeats = reduce(geneFeats)
-    exonFeats = reduce(exonFeats)
-    UTR5Feats = reduce(UTR5Feats)
-    UTR3Feats = reduce(UTR3Feats)
-    # Keep only standard chromosomes
-    geneFeats= keepStandardChromosomes(geneFeats, pruning.mode = "coarse")
-    exonFeats = keepStandardChromosomes(exonFeats, pruning.mode = "coarse")
-    UTR5Feats = keepStandardChromosomes(UTR5Feats, pruning.mode = "coarse")
-    UTR3Feats = keepStandardChromosomes(UTR3Feats, pruning.mode = "coarse")
-    # Since we're storing this data, we want it to be small.
-    elementMetadata(geneFeats) = NULL
-    elementMetadata(exonFeats) = NULL
-    elementMetadata(UTR5Feats) = NULL
-    elementMetadata(UTR3Feats) = NULL
-    # Change from ensembl-style chrom annotation to UCSC_style
-    seqlevels(geneFeats) = paste0("chr", seqlevels(geneFeats))
-    seqlevels(exonFeats) = paste0("chr", seqlevels(exonFeats))
-    seqlevels(UTR5Feats) = paste0("chr", seqlevels(UTR5Feats))
-    seqlevels(UTR3Feats) = paste0("chr", seqlevels(UTR3Feats))
-    list(genesGR=geneFeats, exonsGR=exonFeats, threeUTRGR=UTR3Feats, 
-         fiveUTRGR=UTR5Feats)
-  }, error=function(err){
-    # Try a TxDb instead
-    message("Failed, trying a UCSC TxDb instead")
-    message("Here's the original error message:")
-    message(err)
-    txdb = loadTxDb(genome)
-    exonFeats = GenomicFeatures::exons(txdb)
-    geneFeats = GenomicFeatures::transcripts(txdb)
-    UTR3Feats = GenomicFeatures::threeUTRsByTranscript(txdb)
-    UTR5Feats = GenomicFeatures::fiveUTRsByTranscript(txdb) 
-    geneFeats = reduce(geneFeats)
-    exonFeats = reduce(exonFeats)
-    list(genesGR=geneFeats, exonsGR=exonFeats,  threeUTRGR=UTR3Feats, 
-         fiveUTRGR=UTR5Feats)
-  })
-  return(geneModels)
-}
-
-myTSS <- function(genome, EDB) {
-  feats = tryCatch({
-    message("building TSS using Ensembl")
-    EnsDb =  EDB
-    codingFilter = AnnotationFilter::AnnotationFilter(
-      ~ gene_biotype == "protein_coding")
-    featsWide = ensembldb::genes(EnsDb, filter=codingFilter)
-    # Grab just a single base pair at the TSS
-    feats = promoters(featsWide, 1, 1)
-    # Change from ensembl-style chrom annotation to UCSC_style
-    seqlevels(feats) = paste0("chr", seqlevels(feats))
-    feats
-  }, error=function(err){
-    message("failed, trying a UCSC TxDb instead")
-    message("Here's the original error message:")
-    message(err)
-    # Using TxDb
-    txdb = loadTxDb(genome)
-    # Grab just a single base pair at the TSS
-    GenomicFeatures::promoters(txdb, 1, 1)
-  })
-  return(feats)
-}
-
-myPartitionList <- function(genome, EDB){
-  geneModels = myGeneModels(genome, EDB)
-  partitionList = genomePartitionList(geneModels$genesGR,
-                                      geneModels$exonsGR,
-                                      geneModels$threeUTRGR,
-                                      geneModels$fiveUTRGR)
+myPartitionList <- function(gtffile){
+  features = c("gene", "exon", "three_prime_utr", "five_prime_utr")
+  geneModels = getGeneModelsFromGTF(gtffile, features, TRUE)
+  print(geneModels)
+  partitionList = genomePartitionList(geneModels$gene,
+                                      geneModels$exon,
+                                      geneModels$three_prime_utr,
+                                      geneModels$five_prime_utr)
   
   return (partitionList) 
 }
@@ -188,7 +102,7 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
         if (genome %in% c("hg19", "hg38", "mm10", "mm9")) {
           plotBoth("tssdist", plotFeatureDist( calcFeatureDistRefTSS(query, genome), featureName="TSS"))
         } else {
-        tss = myTSS(genome, EDB)
+        tss = getTssFromGTF(gtffile, TRUE)
         plotBoth("tssdist", plotFeatureDist( calcFeatureDist(query, tss), featureName="TSS"))
         }
       }
@@ -257,7 +171,7 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
           gp = calcPartitionsRef(query, genome)
           plotBoth("paritions", plotPartitions(gp))
         } else {
-          partitionList = myPartitionList(genome, EDB)
+          partitionList = myPartitionList(gtffile)
           gp = calcPartitions(query, partitionList)
           plotBoth("paritions", plotPartitions(gp))
         }
@@ -289,7 +203,7 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
         if (genome %in% c("hg19", "hg38", "mm10")) {
           plotBoth("expected_partitions", plotExpectedPartitions(calcExpectedPartitionsRef(query, genome)))
         } else {
-          partitionList = myPartitionList(genome, EDB)
+          partitionList = myPartitionList(gtffile)
           chromSizes = myChromSizes(genome)
           genomeSize = sum(chromSizes)
           plotBoth("expected_partitions", plotExpectedPartitions(calcExpectedPartitions(query, partitionList, genomeSize)))
@@ -313,7 +227,7 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
         if (genome %in% c("hg19", "hg38", "mm10")) {
           plotBoth("cumulative_partitions", plotCumulativePartitions(calcCumulativePartitionsRef(query, genome)))
         } else{
-          partitionList = myPartitionList(genome, EDB)
+          partitionList = myPartitionList(gtffile)
           plotBoth("cumulative_partitions", plotCumulativePartitions(calcCumulativePartitions(query, partitionList)))
         }
         plots = rbind(plots, getPlotReportDF("cumulative_partitions", "Cumulative distribution over genomic partitions"))
@@ -419,17 +333,13 @@ if (genome == "T2T"){
   orgName = "Celegans"
   } else if (startsWith(genome, "danRer")){
   orgName = "Drerio"
-  } 
+  }  else if (startsWith(genome, "TAIR")){
+    orgName = "Athaliana"
+  }
   BSg = paste0("BSgenome.", orgName , ".UCSC.", genome)
 }
 
 BSgm = paste0(BSg, ".masked")
-
-print(gtffile)
-
-if (gtffile != "None") {
-  EDB = buildEnsDb(gtffile)
-}
 
 # read bed file and run doitall()
 query = LOLA::readBed(bedPath)
