@@ -1,4 +1,4 @@
 piper>=0.12.1
 looper>=1.2.1
 bbconf>=0.1.0
-requests>=2.28.1
+requests>=2.27.0
