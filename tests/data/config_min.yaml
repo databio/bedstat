@@ -4,6 +4,8 @@ database:
   password: pipestat-password
   host: localhost
   port: 5432
+  dialect: postgresql
+  driver: psycopg2
 path:
   pipeline_output_path: $BEDBASE_DATA_PATH/outputs
   bedstat_dir: bedstat_output
