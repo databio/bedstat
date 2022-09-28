@@ -45,11 +45,27 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--genome-assembly",
+    type=str,
+    required=False,
+    default=None,
+    help="genome assembly",
+)
+
+parser.add_argument(
     "--ensdb",
     type=str,
     required=False,
     default=None,
     help="a full path to the ensdb gtf file required for genomes not in GDdata ",
+)
+
+parser.add_argument(
+    "--fasta",
+    type=str,
+    required=False,
+    default=None,
+    help="a full path to the fasta file",
 )
 
 parser.add_argument(
@@ -169,7 +185,7 @@ def main():
             f"Rscript {rscript_path} --bedfilePath={args.bedfile} "
             f"--fileId={fileid} --openSignalMatrix={args.open_signal_matrix} "
             f"--outputFolder={outfolder} --genome={args.genome_assembly} "
-            f"--ensdb={args.ensdb} --digest={bed_digest}"
+            f"--ensdb={args.ensdb} --fasta={args.fasta} --digest={bed_digest}"
         )
         print(command)
         pm.run(cmd=command, target=json_file_path)

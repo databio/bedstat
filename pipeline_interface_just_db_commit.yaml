@@ -15,4 +15,5 @@ command_template: >
   {% if sample.bedbase_config is defined %} --bedbase-config {sample.bedbase_config} {% endif %}
   {% if sample.open_signal_matrix is defined %} --open-signal-matrix {sample.open_signal_matrix} {% endif %}
   {% if sample.ensdb is defined %} --ensdb {sample.ensdb} {% endif %}
+  {% if sample.fasta is defined %} --fasta {sample.fasta} {% endif %}
   {% if sample.bigbed is defined %} --bigbed {sample.bigbed} {% endif %}

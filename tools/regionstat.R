@@ -22,7 +22,9 @@ option_list = list(
   make_option(c("--genome"), type="character", default="hg38",
               help="genome reference to calculate against", metavar="character"),
   make_option(c("--ensdb"), type="character",
-              help="path to the Ensembl annotation gtf file", metavar="character")
+              help="path to the Ensembl annotation gtf file", metavar="character"),
+  make_option(c("--fasta"), type="character",
+              help="path to the fasta file", metavar="character")
 )
 
 
@@ -118,8 +120,12 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   # Chromosomes region distribution plot
   tryCatch(
     expr = {
-      if (genome %in% c("mm39", "dm3", "dm6", "ce10", "ce11", "danRer10", "danRer10", "T2T")){
-        chromSizes = myChromSizes(genome)
+      if (!(genome %in% c("hg19", "hg38", "mm10", "mm9"))){
+        if (fasta == "None"){
+          chromSizes = myChromSizes(genome)
+        } else {
+          chromSizes = getChromSizesFromFasta(fasta)
+        }
         genomeBins  = getGenomeBins(chromSizes)
         plotBoth("chrombins", plotChromBins(calcChromBins(query, genomeBins)))
       } else{
@@ -316,6 +322,7 @@ outfolder = opt$outputFolder
 genome = opt$genome
 cellMatrix = opt$openSignalMatrix
 gtffile = opt$ensdb
+fasta = opt$fasta
 
 
 # build BSgenome package ID to check whether it's installed
