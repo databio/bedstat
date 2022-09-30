@@ -69,27 +69,27 @@ def get_file_size(file_name):
 def run_bedstat(
     bedfile: str,
     bedbase_config: str,
-    bigbed: str,
-    just_db_commit: bool,
     open_signal_matrix: str,
     genome_assembly: str,
     ensdb: str,
-    no_db_commit: bool,
-    sample_yaml: str,
+    bigbed: str = None,
+    sample_yaml: str = None,
+    just_db_commit: bool = False,
+    no_db_commit: bool = False,
 ):
     """
     Main function to run bedstats. Can be used without runing from command line
     :param bedfile: a full path to bed file to process
     :param bigbed: a path to the bedbase configuration file
     :param bedbase_config: a path to the bedbase configuration file
-    :param just_db_commit: whether just to commit the JSON to the database
     :param open_signal_matrix: a full path to the openSignalMatrix required for the tissue
         specificity plots
     :param genome_assembly: genome assembly of the sample
     :param ensdb: a full path to the ensdb gtf file required for genomes not in GDdata
-    :param no_db_commit: whether the JSON commit to the database should be skipped
     :param sample_yaml: a yaml config file with sample attributes to pass on more metadata
         into the database
+    :param just_db_commit: whether just to commit the JSON to the database
+    :param no_db_commit: whether the JSON commit to the database should be skipped
     """
     bbc = bbconf.BedBaseConf(config_path=bedbase_config, database_only=True)
     bedstat_output_path = bbc.get_bedstat_output_path()
