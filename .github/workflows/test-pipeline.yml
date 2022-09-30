@@ -50,8 +50,8 @@ jobs:
       with:
         r-version: ${{ matrix.r }}
 
-#    - name: Install R dependancies
-#      run: Rscript scripts/installRdeps.R
+    - name: Install R dependancies
+      run: Rscript scripts/installRdeps.R
 
     - name: Run pipeline
       run: looper run -p local tests/data/bedstat_config.yaml
