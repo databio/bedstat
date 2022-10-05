@@ -10,8 +10,7 @@ __author__ = [
     "Bingjie Xue",
     "Oleksandr Khoroshevskyi",
 ]
-__email__ = "bnt4me@virginia.edu"
-__version__ = "0.0.4-dev"
+__email__ = "khorosh@virginia.edu"
 
 from argparse import ArgumentParser
 from hashlib import md5

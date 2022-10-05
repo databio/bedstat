@@ -30,7 +30,7 @@ The above command will build the csv file looper needs to run the pipeline on al
 
 ### 1. Validate your PEP with [`eido`](https://github.com/pepkit/eido)
 
-The input PEP can be validated against the [JSON schema in this repository](pep_schema.yaml). This ensures the PEP consists of all required attributes to run `bedstat` pipeline.
+The input PEP can be validated against the [JSON schema in this repository](schemas/pep_schema.yaml). This ensures the PEP consists of all required attributes to run `bedstat` pipeline.
 
 ```
 eido validate <path/to/pep> -s https://schema.databio.org/pipelines/bedstat.yaml
