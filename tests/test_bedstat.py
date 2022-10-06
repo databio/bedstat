@@ -21,6 +21,11 @@ class TestBedstat:
             genome_assembly="hg19",
         )
 
-    def test_db_record(self):
+    def test_db_content(self):
         bbc = bbconf.BedBaseConf(config_path=CONFIG_FILE, database_only=True)
         assert bbc.bed.record_count == 1
+
+    def test_db_record(self):
+        bbc = bbconf.BedBaseConf(config_path=CONFIG_FILE, database_only=True)
+        geonome_check = bbc.bed.select(columns=["other"])[0][0]["genome"]
+        assert geonome_check == "hg19"
