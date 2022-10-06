@@ -1,0 +1,19 @@
+sample_name: AML_db358
+file_name: AML_db358.bed.gz
+genome: hg19
+exp_protocol: ChiPseq
+cell_type: ' K562'
+tissue: Lung
+antibody: ZEB2
+treatment: None
+data_source: GEO
+GSE: 'GSE91663 '
+description: ZEB2 ChIP-seq on human K562 (ENCODE)
+format: bed
+old_name: GSE91663_ENCFF129WGK_optimal_idr_thresholded_peaks_hg19.bigBed
+bedbase_config: $CODE/bedbase/tutorial_files/bedbase_configuration_compose.yaml
+pipeline_interfaces: $CODE/bedstat/pipeline_interface.yaml
+output_file_path: /home/bnt4me/Virginia/bed_base_all/bedbase/bedbase_tutorial/bed_files/AML_db358.bed.gz
+yaml_file: /home/bnt4me/Virginia/bed_base_all/bedbase/bedbase_tutorial/outputs/bedstat_output/bedstat_pipeline_logs/submission/AML_db358_sample.yaml
+open_signal_matrix: /home/bnt4me/Virginia/bed_base_all/bedbase/bedbase_tutorial/openSignalMatrix_hg19_percentile99_01_quantNormalized_round4d.txt.gz
+bigbed: /home/bnt4me/Virginia/bed_base_all/bedbase/bedbase_tutorial/bigbed_files
