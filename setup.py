@@ -52,7 +52,7 @@ setup(
     keywords="pipeline, bioinformatics, workflow",
     url="https://github.com/databio/{}/".format(PACKAGE),
     author="Oleksandr Khoroshevskyi, Bingjie Xue, Michal Stolarczyk, Ognen Duzlevski,"
-           "Jose Verdezoto, ",
+    "Jose Verdezoto, ",
     license="BSD2",
     entry_points={
         "console_scripts": [

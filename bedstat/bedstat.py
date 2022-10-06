@@ -68,9 +68,9 @@ def get_file_size(file_name):
 def run_bedstat(
     bedfile: str,
     bedbase_config: str,
-    open_signal_matrix: str,
     genome_assembly: str,
-    ensdb: str,
+    ensdb: str = None,
+    open_signal_matrix: str = None,
     bigbed: str = None,
     sample_yaml: str = None,
     just_db_commit: bool = False,
@@ -146,6 +146,8 @@ def run_bedstat(
         if os.path.exists(json_plots_file_path):
             with open(json_plots_file_path, "r", encoding="utf-8") as f_plots:
                 plots = json.loads(f_plots.read())
+        else:
+            plots = []
         if sample_yaml:
             # get the sample-specific metadata from the sample yaml representation
             other = {}
