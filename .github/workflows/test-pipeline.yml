@@ -52,8 +52,7 @@ jobs:
     - name: Run pytest tests
       run: pytest tests -x -vv
 
-
-#    - uses: r-lib/actions/setup-r@master
+      #    - uses: r-lib/actions/setup-r@master
 #      with:
 #        r-version: ${{ matrix.r }}
 #
@@ -71,7 +70,3 @@ jobs:
 #          echo "ERROR: files do not exist: $GITHUB_WORKSPACE/outputs/bedstat_output/a6a08126cb6f4b1953ba0ec8675df85a/test_hg38*.png";
 #          exit 1
 #        fi
-
-#    - name: Test record in PostgreSQL
-#      run: |
-#        echo "from bbconf import BedBaseConf; from bbconf.const import *; bbc = BedBaseConf('$GITHUB_WORKSPACE/tests/data/config_min.yaml'); assert bbc.bed.record_count == 1, 'Number of records in the bedfiles table not equal 1'" | python3 -
