@@ -1,5 +1,5 @@
 include README.md
 include requirements/*
 include schemas/*
-include scripts/*
-include tools/*
+include bedstat/scripts/*
+include bedstat/tools/regionstat.R

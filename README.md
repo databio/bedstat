@@ -58,7 +58,7 @@ The data loaded into PostgreSQL should persist between PostgreSQL invocations, o
 
 ## Additional dependencies
 
-[regionstat.R](tools/regionstat.R) script is used to calculate the bed file statistics, so the pipeline also depends on several R packages:
+[regionstat.R](bedstat/tools/regionstat.R) script is used to calculate the bed file statistics, so the pipeline also depends on several R packages:
 
 * `R.utils`
 * `BiocManager`
@@ -71,7 +71,7 @@ The data loaded into PostgreSQL should persist between PostgreSQL invocations, o
 * `BSgenome.<organim>.UCSC.<genome>` *depending on the genome used* 
 * `LOLA`
 
-you can use [installRdeps.R](scripts/installRdeps.R) helper script to easily install the required packages:
+you can use [installRdeps.R](bedstat/scripts/installRdeps.R) helper script to easily install the required packages:
 
 ```
 Rscript scripts/installRdeps.R

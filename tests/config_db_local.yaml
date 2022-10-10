@@ -1,5 +1,5 @@
 path:
-  pipeline_output_path: $BEDBASE_DATA_PATH_HOST/
+  pipeline_output_path: ./
   bedstat_dir: outputs/bedstat_output
   bedbuncher_dir: outputs/bedbuncher_output
   remote_url_base: null
@@ -13,4 +13,4 @@ database:
   driver: psycopg2
 server:
   host: 0.0.0.0
-  port: 8000
+  port: 80pip

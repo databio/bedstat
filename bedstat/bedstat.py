@@ -3,15 +3,6 @@
 bedfile statistics generating pipeline
 """
 
-__author__ = [
-    "Michal Stolarczyk",
-    "Ognen Duzlevski",
-    "Jose Verdezoto",
-    "Bingjie Xue",
-    "Oleksandr Khoroshevskyi",
-]
-__email__ = "khorosh@virginia.edu"
-
 from argparse import ArgumentParser
 from hashlib import md5
 import json
@@ -26,6 +17,16 @@ import gzip
 import pypiper
 import bbconf
 import time
+
+
+__author__ = [
+    "Michal Stolarczyk",
+    "Ognen Duzlevski",
+    "Jose Verdezoto",
+    "Bingjie Xue",
+    "Oleksandr Khoroshevskyi",
+]
+__email__ = "khorosh@virginia.edu"
 
 
 def hash_bedfile(filepath):
@@ -120,6 +121,7 @@ def run_bedstat(
         # run Rscript
         rscript_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "bedstat",
             "tools",
             "regionstat.R",
         )
