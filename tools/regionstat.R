@@ -101,10 +101,12 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
         message("Ensembl annotation gtf file not provided. Skipping TSS distance plot ... ")
       } else{
         if (genome %in% c("hg19", "hg38", "mm10", "mm9")) {
-          plotBoth("tssdist", plotFeatureDist( calcFeatureDistRefTSS(query, genome), featureName="TSS"))
+          TSSdist = calcFeatureDistRefTSS(query, genome)
+          plotBoth("tssdist", plotFeatureDist( TSSdist, featureName="TSS"))
         } else {
-        tss = getTssFromGTF(gtffile, TRUE)
-        plotBoth("tssdist", plotFeatureDist( calcFeatureDist(query, tss), featureName="TSS"))
+          tss = getTssFromGTF(gtffile, TRUE)
+          TSSdist = calcFeatureDist(query, tss)
+          plotBoth("tssdist", plotFeatureDist( TSSdist, featureName="TSS"))
         }
       }
       plots = rbind(plots, getPlotReportDF("tssdist", "Region-TSS distance distribution"))
