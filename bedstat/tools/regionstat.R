@@ -99,10 +99,12 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
         message("Ensembl annotation gtf file not provided. Skipping TSS distance plot ... ")
       } else{
         if (genome %in% c("hg19", "hg38", "mm10", "mm9")) {
-          plotBoth("tssdist", plotFeatureDist( calcFeatureDistRefTSS(query, genome), featureName="TSS"))
+          TSSdist = calcFeatureDistRefTSS(query, genome)
+          plotBoth("tssdist", plotFeatureDist( TSSdist, featureName="TSS"))
         } else {
         tss = getTssFromGTF(gtffile, TRUE)
-        plotBoth("tssdist", plotFeatureDist( calcFeatureDist(query, tss), featureName="TSS"))
+        TSSdist = calcFeatureDist(query, tss)
+        plotBoth("tssdist", plotFeatureDist( TSSdist, featureName="TSS"))
         }
       }
       plots = rbind(plots, getPlotReportDF("tssdist", "Region-TSS distance distribution"))
@@ -297,6 +299,8 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   if (exists('TSSdist') && !all(is.na(TSSdist))){
     tss <- list(median_TSS_dist = signif(median(abs(TSSdist), na.rm=TRUE), digits = 4))
     bedmeta = append(bedmeta, tss)
+    print("bedmeta")
+    print(bedmeta)
   }
   if (exists('partitionsList')){
     write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))
