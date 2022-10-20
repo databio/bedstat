@@ -155,7 +155,7 @@ def run_bedstat(
         if sample_yaml and os.path.exists(sample_yaml):
             # get the sample-specific metadata from the sample yaml representation
             y = yaml.safe_load(open(sample_yaml, "r"))
-            if sample_yaml and os.path.exists(sample_yaml):
+            if schema and os.path.exists(schema):
                 schema = yaml.safe_load(open(schema, "r"))
                 schema = schema["properties"]["samples"]["items"]["properties"]
 
