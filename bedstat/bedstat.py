@@ -154,7 +154,16 @@ def run_bedstat(
             # get the sample-specific metadata from the sample yaml representation
             other = {}
             if os.path.exists(sample_yaml):
-                y = yaml.safe_load(open(sample_yaml, "r"))
+                y = yaml.safe_load(open(args.sample_yaml, "r"))
+                schema = yaml.safe_load(open(args.schema, "r"))
+                schema = schema["properties"]["samples"]["items"]["properties"]
+
+                for key in list(y):
+                    if key in schema:
+                        if not schema[key]["db_commit"]:
+                            y.pop(key, None)
+                    elif key in ["bedbase_config", "pipeline_interfaces", "yaml_file"]:
+                        y.pop(key, None)
                 data.update({"other": y})
         # unlist the data, since the output of regionstat.R is a dict of lists of
         # length 1 and force keys to lower to correspond with the
@@ -260,6 +269,13 @@ def _parse_cmdl():
         required=False,
         help="a yaml config file with sample attributes to pass on more metadata "
         "into the database",
+    )
+    parser.add_argument(
+        "--schema",
+        dest="schema",
+        type=str,
+        required=False,
+        help="schema for the sample table",
     )
     parser.add_argument(
         "--genome",

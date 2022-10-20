@@ -299,8 +299,6 @@ doItAall <- function(query, fileId, genome, cellMatrix) {
   if (exists('TSSdist') && !all(is.na(TSSdist))){
     tss <- list(median_TSS_dist = signif(median(abs(TSSdist), na.rm=TRUE), digits = 4))
     bedmeta = append(bedmeta, tss)
-    print("bedmeta")
-    print(bedmeta)
   }
   if (exists('partitionsList')){
     write(jsonlite::toJSON(c(bedmeta, partitionsList), pretty=TRUE), paste0(outfolder, "/", fileId, ".json"))

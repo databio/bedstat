@@ -2,7 +2,8 @@ pipeline_name: BEDSTAT
 pipeline_type: sample
 var_templates:
   path: "{looper.piface_dir}/pipeline/bedstat.py"
-input_schema: http://schema.databio.org/pipelines/bedstat.yaml
+#input_schema: http://schema.databio.org/pipelines/bedstat.yaml
+input_schema: pep_schema.yaml
 pre_submit:
   python_functions:
     - looper.write_sample_yaml
@@ -11,7 +12,9 @@ command_template: >
   --bedfile {sample.output_file_path}
   --genome {sample.genome}
   --sample-yaml {sample.yaml_file}
+  --schema "{looper.piface_dir}/{pipeline.input_schema}"
   {% if sample.bedbase_config is defined %} --bedbase-config {sample.bedbase_config} {% endif %}
   {% if sample.open_signal_matrix is defined %} --open-signal-matrix {sample.open_signal_matrix} {% endif %}
   {% if sample.ensdb is defined %} --ensdb {sample.ensdb} {% endif %}
+  {% if sample.fasta is defined %} --fasta {sample.fasta} {% endif %}
   {% if sample.bigbed is defined %} --bigbed {sample.bigbed} {% endif %}
