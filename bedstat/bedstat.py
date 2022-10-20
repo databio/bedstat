@@ -28,7 +28,10 @@ __author__ = [
 ]
 __email__ = "khorosh@virginia.edu"
 
-SCHEMA_PATH = "./pep_schema.yaml"
+SCHEMA_PATH = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), "pep_schema.yaml"
+)
+
 
 def hash_bedfile(filepath):
     """generate digest for bedfile"""
@@ -155,7 +158,7 @@ def run_bedstat(
         if sample_yaml and os.path.exists(sample_yaml):
             # get the sample-specific metadata from the sample yaml representation
             y = yaml.safe_load(open(sample_yaml, "r"))
-            #if schema and os.path.exists(schema):
+            # if schema and os.path.exists(schema):
             schema = yaml.safe_load(open(SCHEMA_PATH, "r"))
             schema = schema["properties"]["samples"]["items"]["properties"]
 
