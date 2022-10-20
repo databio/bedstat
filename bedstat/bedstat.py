@@ -74,6 +74,7 @@ def run_bedstat(
     open_signal_matrix: str = None,
     bigbed: str = None,
     sample_yaml: str = None,
+    schema: str = None,
     just_db_commit: bool = False,
     no_db_commit: bool = False,
 ):
@@ -88,6 +89,7 @@ def run_bedstat(
     :param ensdb: a full path to the ensdb gtf file required for genomes not in GDdata
     :param sample_yaml: a yaml config file with sample attributes to pass on more metadata
         into the database
+    :param schema: sample table schema
     :param just_db_commit: whether just to commit the JSON to the database
     :param no_db_commit: whether the JSON commit to the database should be skipped
     """
@@ -154,8 +156,8 @@ def run_bedstat(
             # get the sample-specific metadata from the sample yaml representation
             other = {}
             if os.path.exists(sample_yaml):
-                y = yaml.safe_load(open(args.sample_yaml, "r"))
-                schema = yaml.safe_load(open(args.schema, "r"))
+                y = yaml.safe_load(open(sample_yaml, "r"))
+                schema = yaml.safe_load(open(schema, "r"))
                 schema = schema["properties"]["samples"]["items"]["properties"]
 
                 for key in list(y):
