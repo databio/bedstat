@@ -152,11 +152,10 @@ def run_bedstat(
                 plots = json.loads(f_plots.read())
         else:
             plots = []
-        if sample_yaml:
+        if sample_yaml and os.path.exists(sample_yaml):
             # get the sample-specific metadata from the sample yaml representation
-            other = {}
-            if os.path.exists(sample_yaml):
-                y = yaml.safe_load(open(sample_yaml, "r"))
+            y = yaml.safe_load(open(sample_yaml, "r"))
+            if sample_yaml and os.path.exists(sample_yaml):
                 schema = yaml.safe_load(open(schema, "r"))
                 schema = schema["properties"]["samples"]["items"]["properties"]
 
@@ -166,7 +165,7 @@ def run_bedstat(
                             y.pop(key, None)
                     elif key in ["bedbase_config", "pipeline_interfaces", "yaml_file"]:
                         y.pop(key, None)
-                data.update({"other": y})
+            data.update({"other": y})
         # unlist the data, since the output of regionstat.R is a dict of lists of
         # length 1 and force keys to lower to correspond with the
         # postgres column identifiers
