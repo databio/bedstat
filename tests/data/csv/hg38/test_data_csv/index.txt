@@ -1,4 +1,0 @@
-filename,cellType,treatment,antibody,description
-a.bed,a,None,None,first cell line
-b.bed,b,None,None,second cell line
-c.bed,c,EWS-FLI1,None,test
