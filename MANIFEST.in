@@ -3,3 +3,4 @@ include requirements/*
 include schemas/*
 include bedstat/scripts/*
 include bedstat/tools/regionstat.R
+include bedstat/pep_schema.yaml
