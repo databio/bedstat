@@ -1,3 +1,5 @@
+Archived: This pipeline is now maintained as part of https://github.com/databio/bedboss
+
 # bedstat
 pipeline for obtaining statistics about bed files
 
